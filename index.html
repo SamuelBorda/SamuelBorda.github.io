@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  
+
+<head>
+  <meta charset="utf-8" />
+  <title>Model Neeko VR-AR</title>
+  <meta name="description" content="Model Viewer (VR / AR) • A-Frame" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes"
+  />
+
+  
+  <script src="https://aframe.io/releases/1.4.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-extras@7.0.0/dist/aframe-extras.min.js"></script>
+  <script src="https://unpkg.com/aframe-extras@3.3.0/dist/aframe-extras.min.js"></script>
+
+
+</head>
+
+<body>
+  <a-scene embedded >
+  
+    
+      <a-assets>
+    
+        <a-asset-item
+          id="neekoModel"
+          src="https://github.com/SamuelBorda/ARbussinescardAndGlbAnimate/blob/main/assets/asset.glb"
+        ></a-asset-item>
+       
+      </a-assets>
+
+    
+    <a-entity
+      gltf-model="#neekoModel"
+      position="'0 0.5 0'"
+      animation-mixer
+    ></a-entity>
+ 
+    <!--   <a-entity gltf-model="#fondo" position="1.5 3 -5" animation-mixer></a-entity> -->
+
+
+  </a-scene>
+</body>
+</html>
