@@ -1,0 +1,110 @@
+import type { SkillCategory } from '../utils/types';
+
+export const skillCategories: SkillCategory[] = [
+  {
+    title: 'Backend Mastery',
+    icon: 'Server',
+    skills: [
+      {
+        name: 'Laravel',
+        level: 95,
+        experience: 'Arquitectura MVC, Eloquent ORM, Queues, Sanctum, APIs RESTful',
+        icon: 'laravel',
+        rarity: 'Legendary',
+        tag: 'Framework PHP',
+      },
+      {
+        name: 'PHP 8+',
+        level: 90,
+        experience: 'POO avanzada, Composer, Types, Traits, PSR standards',
+        icon: 'php',
+        rarity: 'Epic',
+        tag: 'Core Backend',
+      },
+      {
+        name: 'Node.js & Express',
+        level: 88,
+        experience: 'Event Loop, Microservicios, Async I/O, Middlewares, Auth JWT',
+        icon: 'nodejs',
+        rarity: 'Epic',
+        tag: 'JavaScript Runtime',
+      },
+      {
+        name: 'Bases de Datos & SQL',
+        level: 85,
+        experience: 'MySQL, PostgreSQL, Migraciones, Optimización de Queries e Índices',
+        icon: 'database',
+        rarity: 'Rare',
+        tag: 'Data Persistence',
+      },
+    ],
+  },
+  {
+    title: 'Frontend & UI Frameworks',
+    icon: 'Layout',
+    skills: [
+      {
+        name: 'Next.js',
+        level: 92,
+        experience: 'App Router, Server Components, SSR / SSG, SEO, Turbopack',
+        icon: 'nextjs',
+        rarity: 'Legendary',
+        tag: 'React Framework',
+      },
+      {
+        name: 'React',
+        level: 90,
+        experience: 'Hooks, Context API, Virtual DOM, Render Optimization, SPA',
+        icon: 'react',
+        rarity: 'Epic',
+        tag: 'Library UI',
+      },
+      {
+        name: 'Angular',
+        level: 80,
+        experience: 'TypeScript, Componentes, Servicios, Dependency Injection, RxJS',
+        icon: 'angular',
+        rarity: 'Rare',
+        tag: 'Enterprise Framework',
+      },
+      {
+        name: 'Tailwind CSS & Canvas',
+        level: 94,
+        experience: 'Diseño responsivo, animaciones dinámicas, Three.js shaders & efectos',
+        icon: 'tailwind',
+        rarity: 'Epic',
+        tag: 'Styling & 3D',
+      },
+    ],
+  },
+  {
+    title: 'DevOps, Tools & Weapons',
+    icon: 'Shield',
+    skills: [
+      {
+        name: 'Git & GitHub Actions',
+        level: 90,
+        experience: 'Control de versiones, CI/CD pipelines, automatización de despliegues',
+        icon: 'git',
+        rarity: 'Epic',
+        tag: 'CI/CD & Versioning',
+      },
+      {
+        name: 'RESTful APIs & GraphQL',
+        level: 92,
+        experience: 'Diseño de endpoints, OpenAPI / Swagger, Postman, integraciones webhooks',
+        icon: 'api',
+        rarity: 'Epic',
+        tag: 'Architecture',
+      },
+      {
+        name: 'Docker & Contenedores',
+        level: 78,
+        experience: 'Dockerfiles, Docker Compose para entornos LAMP / MERN',
+        icon: 'docker',
+        rarity: 'Rare',
+        tag: 'Containers',
+      },
+    ],
+  },
+];
