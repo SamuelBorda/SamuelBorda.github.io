@@ -1,0 +1,364 @@
+[
+  {
+    "id": "repo-1",
+    "title": "SamuelBorda",
+    "description": "Config files for my GitHub profile.",
+    "category": "Fullstack",
+    "tags": [
+      "Code",
+      "config",
+      "github-config"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/SamuelBorda",
+    "demoUrl": "https://github.com/SamuelBorda",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": null,
+      "lastUpdated": "2026-10-11"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-2",
+    "title": "Wake-On-Wlan-with-ESP32-and-MQTT-",
+    "description": "When a message is published to that topic (for example from a mobile app), the ESP32 sends a Wake-on-LAN magic packet to the target computer in the local network.",
+    "category": "C++",
+    "tags": [
+      "C++"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/Wake-On-Wlan-with-ESP32-and-MQTT-",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "C++",
+      "lastUpdated": "2026-03-06"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-3",
+    "title": "Servidor-MineCraft-1.20.1",
+    "description": ";3",
+    "category": "Batchfile",
+    "tags": [
+      "Batchfile"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/Servidor-MineCraft-1.20.1",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "Batchfile",
+      "lastUpdated": "2025-07-04"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-4",
+    "title": "Git_link",
+    "description": "Sin descripción",
+    "category": "Fullstack",
+    "tags": [
+      "Code"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/Git_link",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": null,
+      "lastUpdated": "2025-03-16"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-5",
+    "title": "TSS-SimuInv",
+    "description": "Sin descripción",
+    "category": "Blade",
+    "tags": [
+      "Blade"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/TSS-SimuInv",
+    "demoUrl": "",
+    "featured": true,
+    "stats": {
+      "stars": 1,
+      "forks": 0,
+      "language": "Blade",
+      "lastUpdated": "2025-02-22"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-6",
+    "title": "pruebaglitch",
+    "description": "Sin descripción",
+    "category": "JavaScript",
+    "tags": [
+      "JavaScript"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/pruebaglitch",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "JavaScript",
+      "lastUpdated": "2024-08-13"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-7",
+    "title": "Beneficio-Costo",
+    "description": "Sin descripción",
+    "category": "JavaScript",
+    "tags": [
+      "JavaScript"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/Beneficio-Costo",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "JavaScript",
+      "lastUpdated": "2024-06-09"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-8",
+    "title": "SamuelBorda.github.io",
+    "description": "Sin descripción",
+    "category": "HTML",
+    "tags": [
+      "HTML"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/SamuelBorda.github.io",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "HTML",
+      "lastUpdated": "2023-09-11"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-9",
+    "title": "ARbussinescardAndGlbAnimate.github.io",
+    "description": "Sin descripción",
+    "category": "HTML",
+    "tags": [
+      "HTML"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/ARbussinescardAndGlbAnimate.github.io",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "HTML",
+      "lastUpdated": "2023-09-11"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-10",
+    "title": "Heladeria-Ice-Pink",
+    "description": "proyecto de heladeria de umss",
+    "category": "HTML",
+    "tags": [
+      "HTML"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/Heladeria-Ice-Pink",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "HTML",
+      "lastUpdated": "2023-08-06"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-11",
+    "title": "laravel",
+    "description": "Sin descripción",
+    "category": "PHP",
+    "tags": [
+      "PHP"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/laravel",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "PHP",
+      "lastUpdated": "2023-04-09"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-12",
+    "title": "weather-app",
+    "description": "Sin descripción",
+    "category": "Fullstack",
+    "tags": [
+      "Code"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/weather-app",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": null,
+      "lastUpdated": "2022-08-17"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-13",
+    "title": "examGit",
+    "description": "Sin descripción",
+    "category": "Fullstack",
+    "tags": [
+      "Code"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/examGit",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": null,
+      "lastUpdated": "2022-07-23"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-14",
+    "title": "gitprue",
+    "description": "prueba de github",
+    "category": "CSS",
+    "tags": [
+      "CSS"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/gitprue",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "CSS",
+      "lastUpdated": "2022-04-29"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-15",
+    "title": "Poke-Tinder",
+    "description": "Busca tu Pokemon ideal y enamórate de su personalidad única.",
+    "category": "CSS",
+    "tags": [
+      "CSS"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/Poke-Tinder",
+    "demoUrl": "https://poketinder.netlify.app",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "CSS",
+      "lastUpdated": "2021-08-15"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-16",
+    "title": "Nemius-Css",
+    "description": "Sin descripción",
+    "category": "HTML",
+    "tags": [
+      "HTML"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/Nemius-Css",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "HTML",
+      "lastUpdated": "2021-07-13"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-17",
+    "title": "Estructura-HTML-de-Nemium",
+    "description": "Sin descripción",
+    "category": "HTML",
+    "tags": [
+      "HTML"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/Estructura-HTML-de-Nemium",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "HTML",
+      "lastUpdated": "2021-06-29"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-18",
+    "title": "EvaluacionFinalGit",
+    "description": "Sin descripción",
+    "category": "Fullstack",
+    "tags": [
+      "Code"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/EvaluacionFinalGit",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": null,
+      "lastUpdated": "2021-06-13"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  }
+]

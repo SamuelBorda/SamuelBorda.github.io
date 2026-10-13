@@ -15,15 +15,14 @@ export const ContactSection: React.FC = () => {
 
     soundManager.playSuccess();
     confetti({
-      particleCount: 70,
-      spread: 60,
+      particleCount: 80,
+      spread: 70,
       origin: { y: 0.8 },
-      colors: ['#06b6d4', '#10b981', '#3b82f6'],
+      colors: ['#fcee0a', '#00f0ff', '#ff003c'],
     });
 
     setSent(true);
-    // User can customize mailto or their preferred form provider (Formspree/EmailJS)
-    const subject = encodeURIComponent(`Mensaje de portafolio de ${formData.name}`);
+    const subject = encodeURIComponent(`[Portafolio Dev] Contacto de ${formData.name}`);
     const body = encodeURIComponent(`${formData.message}\n\nContacto: ${formData.email}`);
     window.location.href = `mailto:${userProfile.email}?subject=${subject}&body=${body}`;
   };
@@ -31,20 +30,20 @@ export const ContactSection: React.FC = () => {
   return (
     <section id="contact" className="py-24 px-4 max-w-7xl mx-auto scroll-mt-20">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        {/* Left Column: Direct info & status */}
+        {/* Left Column */}
         <div className="lg:col-span-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-950/50 border border-emerald-500/40 text-emerald-400 text-xs font-mono mb-4">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>FRECUENCIA ABIERTA DE TRANSMISIÓN</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0a0c12] border border-[#fcee0a]/50 text-[#fcee0a] text-xs font-mono mb-4">
+            <span className="w-2 h-2 rounded-full bg-[#fcee0a] animate-pulse"></span>
+            <span>TRANSMISIÓN // CANAL DIRECTO</span>
           </div>
 
           <h2 className="text-3xl sm:text-5xl font-black text-white font-mono tracking-tight mb-4">
-            ¿Listo para <br />
-            <span className="text-cyan-400 glow-cyan">Colaborar?</span>
+            Iniciar <br />
+            <span className="text-[#00f0ff] glow-cyan">Conexión</span>
           </h2>
 
           <p className="text-slate-400 text-sm leading-relaxed mb-8 font-light">
-            Estoy disponible para nuevos proyectos, puestos de desarrollo fullstack y consultorías en Laravel, Next.js, Node.js y React. Transmite tu mensaje y responderé en breve.
+            Disponible para desarrollo de sistemas, proyectos fullstack en Laravel, Next.js, Node.js y colaboraciones de alto calibre. Establece contacto a través del dataterm.
           </p>
 
           {/* Social Links */}
@@ -52,13 +51,13 @@ export const ContactSection: React.FC = () => {
             <a
               href={`mailto:${userProfile.email}`}
               onClick={() => soundManager.playClick()}
-              className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-400 flex items-center gap-3 text-slate-300 hover:text-white transition-all group"
+              className="p-3.5 bg-[#0a0c12]/90 border border-slate-800 hover:border-[#fcee0a] flex items-center gap-3 text-slate-300 hover:text-white transition-all group"
             >
-              <div className="p-2 rounded-lg bg-cyan-950 text-cyan-400 group-hover:scale-110 transition-transform">
+              <div className="p-2 bg-yellow-950/40 text-[#fcee0a] group-hover:scale-110 transition-transform">
                 <Mail className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-[10px] text-slate-500 uppercase">Correo Electrónico</div>
+                <div className="text-[10px] text-slate-500 uppercase">Canal de Correo</div>
                 <div className="text-xs font-semibold">{userProfile.email}</div>
               </div>
             </a>
@@ -68,9 +67,9 @@ export const ContactSection: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => soundManager.playClick()}
-              className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-400 flex items-center gap-3 text-slate-300 hover:text-white transition-all group"
+              className="p-3.5 bg-[#0a0c12]/90 border border-slate-800 hover:border-[#00f0ff] flex items-center gap-3 text-slate-300 hover:text-white transition-all group"
             >
-              <div className="p-2 rounded-lg bg-slate-800 text-slate-300 group-hover:scale-110 transition-transform">
+              <div className="p-2 bg-cyan-950/40 text-[#00f0ff] group-hover:scale-110 transition-transform">
                 <GithubIcon className="w-4 h-4" />
               </div>
               <div>
@@ -84,9 +83,9 @@ export const ContactSection: React.FC = () => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => soundManager.playClick()}
-              className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 hover:border-cyan-400 flex items-center gap-3 text-slate-300 hover:text-white transition-all group"
+              className="p-3.5 bg-[#0a0c12]/90 border border-slate-800 hover:border-[#ff003c] flex items-center gap-3 text-slate-300 hover:text-white transition-all group"
             >
-              <div className="p-2 rounded-lg bg-blue-950 text-blue-400 group-hover:scale-110 transition-transform">
+              <div className="p-2 bg-rose-950/40 text-[#ff003c] group-hover:scale-110 transition-transform">
                 <LinkedinIcon className="w-4 h-4" />
               </div>
               <div>
@@ -97,28 +96,24 @@ export const ContactSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Column: Transmission Form */}
+        {/* Right Column: Form */}
         <div className="lg:col-span-7">
-          <div className="p-8 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl relative shadow-2xl">
-            {/* Tech Corner accents */}
-            <div className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-cyan-400"></div>
-            <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-cyan-400"></div>
-
-            <div className="flex items-center gap-2 pb-4 mb-6 border-b border-slate-800 font-mono text-xs text-cyan-400">
+          <div className="p-8 bg-[#080a10]/55 border border-slate-800/80 backdrop-blur-md relative shadow-2xl clip-cyber">
+            <div className="flex items-center gap-2 pb-4 mb-6 border-b border-slate-800 font-mono text-xs text-[#00f0ff]">
               <MessageSquare className="w-4 h-4" />
-              <span>TERMINAL DE ENVÍO DIRECTO</span>
+              <span>TERMINAL DE TRANSMISIÓN // FORMULARIO</span>
             </div>
 
             {sent ? (
               <div className="py-12 text-center font-mono">
-                <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto mb-4 animate-bounce" />
+                <CheckCircle2 className="w-12 h-12 text-[#fcee0a] mx-auto mb-4 animate-bounce" />
                 <h3 className="text-xl font-bold text-white mb-2">¡TRANSMISIÓN ENVIADA!</h3>
                 <p className="text-slate-400 text-xs max-w-sm mx-auto">
-                  Se ha generado la conexión. Responderé a tu canal lo antes posible.
+                  Paquete de datos despachado. Responderé en la mayor brevedad.
                 </p>
                 <button
                   onClick={() => setSent(false)}
-                  className="mt-6 px-4 py-2 rounded bg-slate-800 text-slate-300 text-xs border border-slate-700"
+                  className="mt-6 px-4 py-2 bg-slate-900 text-slate-300 text-xs border border-slate-700 hover:border-[#00f0ff]"
                 >
                   Enviar otro mensaje
                 </button>
@@ -127,21 +122,21 @@ export const ContactSection: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
                 <div>
                   <label className="block text-slate-400 mb-1.5 uppercase tracking-wider text-[11px]">
-                    Tu Nombre o Compañía
+                    Nombre o Empresa
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej. Alex Vance / Tech Corp"
+                    placeholder="Ej. Night City Tech / David"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg bg-slate-950/80 border border-slate-800 focus:border-cyan-400 focus:outline-none text-slate-100 placeholder:text-slate-600 transition-colors"
+                    className="w-full px-4 py-3 bg-[#050608] border border-slate-800 focus:border-[#00f0ff] focus:outline-none text-slate-100 placeholder:text-slate-600 transition-colors"
                   />
                 </div>
 
                 <div>
                   <label className="block text-slate-400 mb-1.5 uppercase tracking-wider text-[11px]">
-                    Tu Correo Electrónico
+                    Correo de Contacto
                   </label>
                   <input
                     type="email"
@@ -149,31 +144,31 @@ export const ContactSection: React.FC = () => {
                     placeholder="tu-email@empresa.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg bg-slate-950/80 border border-slate-800 focus:border-cyan-400 focus:outline-none text-slate-100 placeholder:text-slate-600 transition-colors"
+                    className="w-full px-4 py-3 bg-[#050608] border border-slate-800 focus:border-[#00f0ff] focus:outline-none text-slate-100 placeholder:text-slate-600 transition-colors"
                   />
                 </div>
 
                 <div>
                   <label className="block text-slate-400 mb-1.5 uppercase tracking-wider text-[11px]">
-                    Mensaje / Misión
+                    Mensaje / Requerimientos
                   </label>
                   <textarea
                     rows={4}
                     required
-                    placeholder="Describe los requerimientos del proyecto o la propuesta..."
+                    placeholder="Detalles del proyecto, arquitectura o propuesta..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3 rounded-lg bg-slate-950/80 border border-slate-800 focus:border-cyan-400 focus:outline-none text-slate-100 placeholder:text-slate-600 transition-colors resize-none"
+                    className="w-full px-4 py-3 bg-[#050608] border border-slate-800 focus:border-[#00f0ff] focus:outline-none text-slate-100 placeholder:text-slate-600 transition-colors resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   onMouseEnter={() => soundManager.playHover()}
-                  className="w-full py-3.5 rounded-lg bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-sm tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="w-full py-3.5 bg-[#fcee0a] hover:bg-yellow-300 text-slate-950 font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] clip-cyber-sm"
                 >
                   <Send className="w-4 h-4" />
-                  <span>TRANSMITIR MENSAJE</span>
+                  <span>TRANSMITIR MENSAJE // ENVIAR</span>
                 </button>
               </form>
             )}
