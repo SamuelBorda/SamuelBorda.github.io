@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Background3D } from './components/Background3D';
+import { CyberCursor } from './components/CyberCursor';
 import { NavbarHUD } from './components/NavbarHUD';
 import { HeroSection } from './components/HeroSection';
 import { ProjectsSection } from './components/ProjectsSection';
@@ -13,16 +14,19 @@ export function App() {
   const [scanlinesActive, setScanlinesActive] = useState(false);
 
   return (
-    <div className="relative min-h-screen bg-[#090a0f] text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
-      {/* Three.js Procedural 3D Canvas Background */}
+    <div className="relative min-h-screen text-slate-100 selection:bg-[#fcee0a] selection:text-slate-950">
+      {/* Three.js Procedural 3D Galaxy Canvas Background */}
       <Background3D />
+
+      {/* Interactive Cyberpunk Cursor Tracker & Trail */}
+      <CyberCursor />
 
       {/* Optional CRT Retro Gaming Scanlines Effect */}
       {scanlinesActive && (
         <div className="fixed inset-0 z-40 pointer-events-none scanlines" />
       )}
 
-      {/* Main Content Layout */}
+      {/* Main Content Layout with translucent backdrop so 3D galaxy shines through */}
       <div className="relative z-10 flex flex-col min-h-screen">
         <NavbarHUD
           onOpenTerminal={() => setTerminalOpen(true)}

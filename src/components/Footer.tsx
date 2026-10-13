@@ -10,26 +10,26 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="border-t border-slate-900 bg-[#06070a] py-12 px-4 font-mono text-xs text-slate-500">
+    <footer className="border-t border-slate-900 bg-[#030406]/70 backdrop-blur-sm py-12 px-4 font-mono text-xs text-slate-500">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-2">
-          <Terminal className="w-4 h-4 text-cyan-400" />
+          <Terminal className="w-4 h-4 text-[#fcee0a]" />
           <span>
-            {userProfile.handle.toUpperCase()} © {new Date().getFullYear()} // TODOS LOS DERECHOS RESERVADOS
+            {userProfile.handle} © {new Date().getFullYear()} // NIGHT CITY NETRUNNER PROTOCOL
           </span>
         </div>
 
         <div className="flex items-center gap-1.5 text-slate-400">
-          <span>Diseñado para alto rendimiento en</span>
-          <span className="text-cyan-400 font-bold">GitHub Pages</span>
+          <span>Static Export Optimizado para</span>
+          <span className="text-[#00f0ff] font-bold">GitHub Pages</span>
         </div>
 
         <button
           onClick={scrollToTop}
           onMouseEnter={() => soundManager.playHover()}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:text-cyan-400 hover:border-cyan-500/50 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0a0c12] border border-slate-800 text-slate-300 hover:text-[#fcee0a] hover:border-[#fcee0a]/50 transition-colors"
         >
-          <span>VOLVER ARRIBA</span>
+          <span>TOP // REGRESAR</span>
           <ArrowUp className="w-3.5 h-3.5" />
         </button>
       </div>

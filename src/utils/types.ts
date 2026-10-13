@@ -14,8 +14,8 @@ export interface Project {
     lastUpdated?: string;
   };
   image?: string;
-  difficulty?: 'EASY' | 'MEDIUM' | 'HARD' | 'BOSS';
-  rewardXP?: number;
+  architecture?: 'MICROSERVICES' | 'MONOLITH' | 'SERVERLESS' | 'JAMSTACK' | 'HYBRID';
+  deployStatus?: 'PRODUCTION' | 'DEPLOYED' | 'ACTIVE';
 }
 
 export interface SkillCategory {
@@ -26,7 +26,7 @@ export interface SkillCategory {
     level: number; // 1-100
     experience: string;
     icon: string;
-    rarity: 'Common' | 'Rare' | 'Epic' | 'Legendary';
+    specialization: 'Core Architecture' | 'Advanced' | 'Enterprise';
     tag: string;
   }[];
 }
@@ -35,7 +35,7 @@ export interface UserProfile {
   name: string;
   handle: string;
   role: string;
-  level: number;
+  clearance: string;
   location: string;
   bio: string;
   github: string;
