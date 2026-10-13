@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { ExternalLink, Star, GitFork, Award, Code } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { ExternalLink, Star, GitFork, Code2 } from 'lucide-react';
 import type { Project } from '../utils/types';
 import { GithubIcon } from './BrandIcons';
 import { soundManager } from '../utils/soundEffects';
@@ -23,9 +23,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    // Calculate rotation limits (-12 to 12 deg)
-    const rotX = -((y - centerY) / centerY) * 10;
-    const rotY = ((x - centerX) / centerX) * 10;
+    const rotX = -((y - centerY) / centerY) * 11;
+    const rotY = ((x - centerX) / centerX) * 11;
 
     setRotateX(rotX);
     setRotateY(rotY);
@@ -33,7 +32,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     setGlarePos({
       x: (x / rect.width) * 100,
       y: (y / rect.height) * 100,
-      opacity: 0.15,
+      opacity: 0.18,
     });
   };
 
@@ -41,13 +40,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     setRotateX(0);
     setRotateY(0);
     setGlarePos((prev) => ({ ...prev, opacity: 0 }));
-  };
-
-  const difficultyColors = {
-    EASY: 'border-emerald-500/50 text-emerald-400 bg-emerald-950/30',
-    MEDIUM: 'border-blue-500/50 text-blue-400 bg-blue-950/30',
-    HARD: 'border-purple-500/50 text-purple-400 bg-purple-950/30',
-    BOSS: 'border-rose-500/50 text-rose-400 bg-rose-950/30 font-bold animate-pulse',
   };
 
   return (
@@ -60,46 +52,42 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
         transition: 'transform 0.15s ease-out',
       }}
-      className="relative flex flex-col justify-between rounded-xl bg-slate-900/75 border border-slate-800 hover:border-cyan-500/60 p-6 backdrop-blur-md shadow-xl transition-shadow duration-300 group hover:shadow-cyan-950/50 overflow-hidden"
+      className="relative flex flex-col justify-between bg-[#080a10]/60 border border-slate-800/80 hover:border-[#00f0ff]/70 p-6 backdrop-blur-md shadow-xl transition-shadow duration-300 group hover:shadow-cyan-950/60 overflow-hidden"
     >
-      {/* Holographic light glare */}
+      {/* Cyberpunk Holographic glare */}
       <div
-        className="pointer-events-none absolute -inset-px rounded-xl transition-opacity duration-300"
+        className="pointer-events-none absolute -inset-px transition-opacity duration-300"
         style={{
-          background: `radial-gradient(circle 280px at ${glarePos.x}% ${glarePos.y}%, rgba(6, 182, 212, ${glarePos.opacity}), transparent)`,
+          background: `radial-gradient(circle 300px at ${glarePos.x}% ${glarePos.y}%, rgba(0, 240, 255, ${glarePos.opacity}), transparent)`,
         }}
       />
 
-      {/* Top Card Header: Category & Quest Difficulty */}
+      {/* Top Card Header: Architecture & Deploy Status */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-4 font-mono text-xs">
-          <div className="flex items-center gap-1.5 text-cyan-400 font-semibold uppercase">
-            <Code className="w-3.5 h-3.5" />
+          <div className="flex items-center gap-1.5 text-[#00f0ff] font-bold uppercase tracking-wider">
+            <Code2 className="w-3.5 h-3.5" />
             <span>{project.category}</span>
           </div>
 
           <div className="flex items-center gap-2">
-            {project.rewardXP && (
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40 flex items-center gap-1">
-                <Award className="w-3 h-3 text-amber-400" />
-                +{project.rewardXP} XP
+            {project.architecture && (
+              <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-slate-900 text-slate-300 border border-slate-700">
+                {project.architecture}
               </span>
             )}
 
-            {project.difficulty && (
-              <span
-                className={`px-2 py-0.5 rounded text-[10px] font-mono border ${
-                  difficultyColors[project.difficulty]
-                }`}
-              >
-                {project.difficulty}
+            {project.deployStatus && (
+              <span className="px-2 py-0.5 text-[9px] font-mono font-bold bg-emerald-950/40 text-emerald-400 border border-emerald-500/50 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                {project.deployStatus}
               </span>
             )}
           </div>
         </div>
 
         {/* Project Title */}
-        <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors mb-2 font-mono">
+        <h3 className="text-xl font-bold text-white group-hover:text-[#fcee0a] transition-colors mb-2.5 font-mono">
           {project.title}
         </h3>
 
@@ -108,12 +96,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
           {project.description}
         </p>
 
-        {/* Tech Stack Tags */}
+        {/* Tech Stack Badges */}
         <div className="flex flex-wrap gap-1.5 mb-6">
           {project.tags.map((tag) => (
             <span
               key={tag}
-              className="px-2 py-0.5 text-[11px] font-mono rounded bg-slate-800/80 border border-slate-700/60 text-slate-300"
+              className="px-2 py-0.5 text-[11px] font-mono bg-slate-950 border border-slate-800 text-slate-300 group-hover:border-slate-700 transition-colors"
             >
               #{tag}
             </span>
@@ -123,17 +111,17 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
 
       {/* Footer Card: Stats & Action Buttons */}
       <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between font-mono text-xs">
-        {/* GitHub Stats if available */}
+        {/* GitHub Stats */}
         <div className="flex items-center gap-3 text-slate-400">
           {project.stats?.stars !== undefined && (
-            <span className="flex items-center gap-1 hover:text-amber-400 transition-colors">
-              <Star className="w-3.5 h-3.5 text-amber-400" />
+            <span className="flex items-center gap-1 hover:text-[#fcee0a] transition-colors">
+              <Star className="w-3.5 h-3.5 text-[#fcee0a]" />
               <span>{project.stats.stars}</span>
             </span>
           )}
           {project.stats?.forks !== undefined && (
-            <span className="flex items-center gap-1 hover:text-cyan-400 transition-colors">
-              <GitFork className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="flex items-center gap-1 hover:text-[#00f0ff] transition-colors">
+              <GitFork className="w-3.5 h-3.5 text-[#00f0ff]" />
               <span>{project.stats.forks}</span>
             </span>
           )}
@@ -148,7 +136,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
               rel="noopener noreferrer"
               onClick={() => soundManager.playClick()}
               onMouseEnter={() => soundManager.playHover()}
-              className="px-3 py-1.5 rounded-lg bg-cyan-950/60 hover:bg-cyan-900/60 border border-cyan-500/50 text-cyan-300 hover:text-cyan-200 flex items-center gap-1.5 transition-all text-xs font-semibold"
+              className="px-3 py-1.5 bg-[#00f0ff]/10 hover:bg-[#00f0ff]/20 border border-[#00f0ff]/50 text-[#00f0ff] flex items-center gap-1.5 transition-all text-xs font-bold"
             >
               <span>Demo</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -161,7 +149,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
             rel="noopener noreferrer"
             onClick={() => soundManager.playClick()}
             onMouseEnter={() => soundManager.playHover()}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white transition-all"
+            className="p-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 hover:border-[#fcee0a] text-slate-300 hover:text-[#fcee0a] transition-all"
             title="Ver Repositorio en GitHub"
           >
             <GithubIcon className="w-4 h-4" />

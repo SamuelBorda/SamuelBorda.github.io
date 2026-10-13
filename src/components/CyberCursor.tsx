@@ -8,11 +8,7 @@ interface TrailDot {
   color: string;
 }
 
-interface CyberCursorProps {
-  isPiloting?: boolean;
-}
-
-export const CyberCursor: React.FC<CyberCursorProps> = ({ isPiloting = false }) => {
+export const CyberCursor: React.FC = () => {
   const [pos, setPos] = useState({ x: -100, y: -100 });
   const [active, setActive] = useState(false);
   const [clicking, setClicking] = useState(false);
@@ -28,8 +24,8 @@ export const CyberCursor: React.FC<CyberCursorProps> = ({ isPiloting = false }) 
       setPos({ x: e.clientX, y: e.clientY });
       setActive(true);
 
-      // Add trail dot periodically (only when not piloting)
-      if (!isPiloting && Math.random() > 0.4) {
+      // Add trail dot periodically
+      if (Math.random() > 0.4) {
         dotIdRef.current += 1;
         const colors = ['#fcee0a', '#00f0ff', '#ff003c'];
         const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -68,10 +64,9 @@ export const CyberCursor: React.FC<CyberCursorProps> = ({ isPiloting = false }) 
       document.removeEventListener('mouseleave', handleMouseLeave);
       clearInterval(interval);
     };
-  }, [isPiloting]);
+  }, []);
 
-  // Hide completely during flight mode so ship cockpit controls have full view
-  if (!active || isPiloting) return null;
+  if (!active) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
@@ -112,7 +107,18 @@ export const CyberCursor: React.FC<CyberCursorProps> = ({ isPiloting = false }) 
 
         {/* Center Target Dot */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-[#fcee0a] shadow-sm shadow-[#fcee0a]" />
+
+        {/* Coordinate Readout Badge (Cyberpunk style) */}
+        <div className="absolute left-6 top-2 font-mono text-[9px] text-[#00f0ff] whitespace-nowrap bg-[#050608]/90 px-1.5 py-0.5 border border-[#00f0ff]/40 tracking-wider">
+          {`POS:[${Math.round(pos.x)}|${Math.round(pos.y)}]`}
+        </div>
+
+        {/* Click Pulse Wave */}
+        {clicking && (
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-[#fcee0a] animate-ping opacity-75" />
+        )}
       </div>
     </div>
   );
 };
+
