@@ -70,7 +70,7 @@ export const CyberCursor: React.FC<CyberCursorProps> = ({ isPiloting = false }) 
     };
   }, [isPiloting]);
 
-  // Hide completely during flight mode (pointer lock handles everything)
+  // Hide completely during flight mode so ship cockpit controls have full view
   if (!active || isPiloting) return null;
 
   return (
