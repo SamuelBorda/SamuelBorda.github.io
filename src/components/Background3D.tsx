@@ -126,6 +126,8 @@ export const Background3D = () => {
 
     const BASE_FOV = 52;
     const BASE_ASPECT = 16 / 9;
+    const BASE_STAR_SIZE = 1.35;
+    let starMat: THREE.PointsMaterial | null = null;
 
     const updateCameraProjection = () => {
       const w = window.innerWidth;
@@ -144,6 +146,17 @@ export const Background3D = () => {
       }
 
       camera.updateProjectionMatrix();
+
+      // Ajuste responsive para las estrellas generadas: en móvil se escalan proporcionalmente
+      // al campo visual para evitar que se vean como esferas gigantes
+      if (starMat) {
+        const baseFovRad = THREE.MathUtils.degToRad(BASE_FOV);
+        const curFovRad = THREE.MathUtils.degToRad(camera.fov);
+        const fovFactor = Math.tan(baseFovRad / 2) / Math.tan(curFovRad / 2);
+        const mobileScale = aspect < 1.0 ? Math.max(0.35, aspect / BASE_ASPECT) : 1.0;
+        starMat.size = BASE_STAR_SIZE * fovFactor * mobileScale;
+      }
+
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(w, h, true);
       composer.setSize(w, h);
@@ -300,7 +313,8 @@ export const Background3D = () => {
 
     for (let i = 0; i < STAR_COUNT; i++) {
       const i3 = i * 3;
-      const rad = 50 + Math.pow(Math.random(), 0.7) * 450;
+      // Radio amplio fuera de la órbita de planetas y cámara para evitar estrellas gigantes en primer plano
+      const rad = 240 + Math.pow(Math.random(), 0.65) * 850;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(Math.random() * 2 - 1);
 
@@ -325,18 +339,21 @@ export const Background3D = () => {
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
     starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
 
-    const starMat = new THREE.PointsMaterial({
-      size: 1.8,
+    starMat = new THREE.PointsMaterial({
+      size: BASE_STAR_SIZE,
       sizeAttenuation: true,
       vertexColors: true,
       map: makeGlowTexture('#ffffff', 64),
       transparent: true,
-      opacity: 0.8,
+      opacity: 0.85,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
     const starPoints = new THREE.Points(starGeo, starMat);
     cosmos.add(starPoints);
+
+    // Sincronizar tamaño responsive inmediatamente
+    updateCameraProjection();
 
     // ========================================================
     // 3. THE CENTRAL SUN (sun.glb con rotación suave)
