@@ -1,7 +1,11 @@
+<<<<<<< HEAD
 import React, { useEffect, useRef, useCallback } from 'react';
+=======
+import React, { useEffect, useRef } from 'react';
+>>>>>>> parent of c4a3a92 (proyecto)
 import * as THREE from 'three';
-import { soundManager } from '../utils/soundEffects';
 
+<<<<<<< HEAD
 /* ================================================================
    BACKGROUND 3D — INFINITE PROCEDURAL LIVING SPACE ENGINE v3.0
    ================================================================
@@ -60,6 +64,9 @@ export const Background3D: React.FC<Background3DProps> = ({
   onTargetScanned,
   onSecondsRemainingUpdate,
 }) => {
+=======
+export const Background3D: React.FC = () => {
+>>>>>>> parent of c4a3a92 (proyecto)
   const containerRef = useRef<HTMLDivElement>(null);
   const flightActiveRef = useRef(isPiloting);
   flightActiveRef.current = isPiloting;
@@ -97,9 +104,9 @@ export const Background3D: React.FC<Background3DProps> = ({
   }, [onPilotingChange, onSecondsRemainingUpdate, onSpeedUpdate, onWarpChange]);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    if (!containerRef.current) return;
 
+<<<<<<< HEAD
     while (container.firstChild) {
       container.removeChild(container.firstChild);
     }
@@ -171,18 +178,32 @@ export const Background3D: React.FC<Background3DProps> = ({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight, true);
     renderer.shadowMap.enabled = false;
+=======
+    // Scene, Camera, Renderer
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x090a0f, 0.0015);
 
-    const canvas = renderer.domElement;
-    canvas.style.position = 'fixed';
-    canvas.style.top = '0';
-    canvas.style.left = '0';
-    canvas.style.width = '100vw';
-    canvas.style.height = '100vh';
-    canvas.style.display = 'block';
-    canvas.style.pointerEvents = 'auto';
-    canvas.style.zIndex = '0';
-    container.appendChild(canvas);
+    const camera = new THREE.PerspectiveCamera(
+      60,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    camera.position.z = 85;
 
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    containerRef.current.appendChild(renderer.domElement);
+>>>>>>> parent of c4a3a92 (proyecto)
+
+    // 1. Particle Cloud (Starfield Nebula)
+    const particleCount = 1800;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    const colors = new Float32Array(particleCount * 3);
+
+<<<<<<< HEAD
     // ========================================================
     // PROCEDURAL TEXTURE LIBRARY
     // ========================================================
@@ -1420,11 +1441,139 @@ export const Background3D: React.FC<Background3DProps> = ({
         starGeo.attributes.color.needsUpdate = true;
       }
 
+=======
+    const color1 = new THREE.Color(0x06b6d4); // Cyan
+    const color2 = new THREE.Color(0x8b5cf6); // Purple
+    const color3 = new THREE.Color(0x3b82f6); // Blue
+
+    for (let i = 0; i < particleCount; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * 350;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * 350;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 350;
+
+      // Gradient color blend
+      const mixedColor = color1.clone().lerp(
+        Math.random() > 0.5 ? color2 : color3,
+        Math.random()
+      );
+      colors[i * 3] = mixedColor.r;
+      colors[i * 3 + 1] = mixedColor.g;
+      colors[i * 3 + 2] = mixedColor.b;
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const particleMaterial = new THREE.PointsMaterial({
+      size: 1.8,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.8,
+      blending: THREE.AdditiveBlending,
+    });
+
+    const particles = new THREE.Points(geometry, particleMaterial);
+    scene.add(particles);
+
+    // 2. Holographic Geometric Core (Wireframe Icosahedron & Dodecahedron)
+    const coreGroup = new THREE.Group();
+
+    // Outer wireframe icosahedron
+    const icoGeo = new THREE.IcosahedronGeometry(18, 1);
+    const icoMat = new THREE.MeshBasicMaterial({
+      color: 0x06b6d4,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.35,
+    });
+    const icoMesh = new THREE.Mesh(icoGeo, icoMat);
+    coreGroup.add(icoMesh);
+
+    // Inner wireframe octahedron
+    const innerGeo = new THREE.OctahedronGeometry(10, 0);
+    const innerMat = new THREE.MeshBasicMaterial({
+      color: 0xa855f7,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.65,
+    });
+    const innerMesh = new THREE.Mesh(innerGeo, innerMat);
+    coreGroup.add(innerMesh);
+
+    // Glowing energy center
+    const light = new THREE.PointLight(0x06b6d4, 2, 80);
+    coreGroup.add(light);
+
+    // Place core slightly offset for balance
+    coreGroup.position.set(28, 5, 0);
+    scene.add(coreGroup);
+
+    // 3. Ambient cyber grid at bottom
+    const gridHelper = new THREE.GridHelper(300, 40, 0x3b82f6, 0x1e293b);
+    gridHelper.position.y = -60;
+    scene.add(gridHelper);
+
+    // Mouse Interaction
+    let targetMouseX = 0;
+    let targetMouseY = 0;
+    let mouseX = 0;
+    let mouseY = 0;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+      targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
+    // Resize handler
+    const handleResize = () => {
+      if (!renderer || !camera) return;
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    // Animation Loop
+    let animationFrameId: number;
+    let clock = new THREE.Clock();
+
+    const animate = () => {
+      animationFrameId = requestAnimationFrame(animate);
+      const elapsedTime = clock.getElapsedTime();
+
+      // Smooth mouse lerping
+      mouseX += (targetMouseX - mouseX) * 0.05;
+      mouseY += (targetMouseY - mouseY) * 0.05;
+
+      // Orbit particles gently
+      particles.rotation.y = elapsedTime * 0.03 + mouseX * 0.2;
+      particles.rotation.x = elapsedTime * 0.015 + mouseY * 0.2;
+
+      // Rotate geometric core
+      coreGroup.rotation.x = elapsedTime * 0.25;
+      coreGroup.rotation.y = elapsedTime * 0.35;
+      innerMesh.rotation.z = -elapsedTime * 0.5;
+      innerMesh.rotation.x = elapsedTime * 0.4;
+
+      // Pulsing scale for core
+      const pulse = 1 + Math.sin(elapsedTime * 2) * 0.04;
+      coreGroup.scale.set(pulse, pulse, pulse);
+
+      // Camera parallax
+      camera.position.x = mouseX * 12;
+      camera.position.y = -mouseY * 8;
+      camera.lookAt(0, 0, 0);
+
+>>>>>>> parent of c4a3a92 (proyecto)
       renderer.render(scene, camera);
     };
 
     animate();
 
+<<<<<<< HEAD
     return () => {
       cancelAnimationFrame(frameId);
       document.exitPointerLock();
@@ -1443,6 +1592,23 @@ export const Background3D: React.FC<Background3DProps> = ({
       if (container.contains(toast)) container.removeChild(toast);
       if (container.contains(jumpOverlay)) container.removeChild(jumpOverlay);
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
+=======
+    // Cleanup on unmount
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+
+      if (containerRef.current && renderer.domElement) {
+        containerRef.current.removeChild(renderer.domElement);
+      }
+      geometry.dispose();
+      particleMaterial.dispose();
+      icoGeo.dispose();
+      icoMat.dispose();
+      innerGeo.dispose();
+      innerMat.dispose();
+>>>>>>> parent of c4a3a92 (proyecto)
       renderer.dispose();
     };
   }, [onPilotingChange, onSpeedUpdate, onWarpChange, onProximityAlert, onDistanceUpdate, onTargetScanned, resetInactivityTimer]);
@@ -1450,8 +1616,7 @@ export const Background3D: React.FC<Background3DProps> = ({
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 w-full h-full pointer-events-none"
-      style={{ zIndex: 0 }}
+      className="fixed inset-0 pointer-events-none z-0 overflow-hidden opacity-90"
       aria-hidden="true"
     />
   );

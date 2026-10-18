@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Background3D } from './components/Background3D';
+<<<<<<< HEAD
 import type { TelemetryTarget } from './components/Background3D';
 import { SpaceshipCockpit } from './components/SpaceshipCockpit';
 import { CyberCursor } from './components/CyberCursor';
+=======
+>>>>>>> parent of c4a3a92 (proyecto)
 import { NavbarHUD } from './components/NavbarHUD';
 import { HeroSection } from './components/HeroSection';
 import { ProjectsSection } from './components/ProjectsSection';
@@ -17,6 +20,7 @@ export function App() {
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [scanlinesActive, setScanlinesActive] = useState(false);
 
+<<<<<<< HEAD
   // Spaceship Flight Mode state
   const [isPiloting, setIsPiloting] = useState(false);
   const [flightSpeed, setFlightSpeed] = useState(0);
@@ -61,11 +65,19 @@ export function App() {
       {/* Interactive Cyberpunk Cursor Tracker & Trail (hidden during flight) */}
       <CyberCursor isPiloting={isPiloting} />
 
+=======
+  return (
+    <div className="relative min-h-screen bg-[#090a0f] text-slate-100 selection:bg-cyan-500 selection:text-slate-950">
+      {/* Three.js Procedural 3D Canvas Background */}
+      <Background3D />
+
+>>>>>>> parent of c4a3a92 (proyecto)
       {/* Optional CRT Retro Gaming Scanlines Effect */}
       {scanlinesActive && (
         <div className="fixed inset-0 z-40 pointer-events-none scanlines" />
       )}
 
+<<<<<<< HEAD
       {/* Flight Mode Quick Launch Pill (visible when not piloting) */}
       {!isPiloting && (
         <div className="fixed bottom-6 right-6 z-30">
@@ -88,6 +100,10 @@ export function App() {
             : 'opacity-100 pointer-events-auto translate-y-0 scale-100 filter blur-none'
         }`}
       >
+=======
+      {/* Main Content Layout */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+>>>>>>> parent of c4a3a92 (proyecto)
         <NavbarHUD
           onOpenTerminal={() => setTerminalOpen(true)}
           scanlinesActive={scanlinesActive}
