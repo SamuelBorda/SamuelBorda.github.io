@@ -1,19 +1,26 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { soundManager } from '../utils/soundEffects';
 
 /* ================================================================
-   BACKGROUND 3D — Living Solar System & Deep Space Universe
+   BACKGROUND 3D — Real 3D Space Cosmos with Bloom & Dynamic Shadows
    ================================================================
-   • Central Sun: glowing core, pulsing solar corona & lens flare
-   • Planets: Earth (clouds & atmo), Moon, Saturn (rings), Mars, Neptune
-   • Celestial Auroras: shimmering undulating curtains of light
-   • Random space events: spacecraft, comets, falling meteors
-   • Full mouse & touch interaction:
-     - Tap/Click on empty space: Cosmic meteor collision & shockwave
-     - Tap/Click on any planet/sun: Electromagnetic shield triggers,
-       rotation burst, data pulse & sound
-     - Mouse drag: full 3D celestial rotation with inertia physics
+   • 360° Skybox 4K Sphere: 4096x2048 HDRI Galaxy Panorama
+   • Initial Viewpoint: Exact cinematic perspective (Earth on left, Sun on right)
+   • Central Sun: photorealistic animated GLB with slow rotation + Bloom
+   • Earth: animated rotating planet with dynamic clouds (GLB) + EM shield
+   • Moon: real 3D GLB model orbiting closely with beautiful flyby effect
+   • Satellite: real 3D GLB model in low Earth orbit (LEO) with deployed panels
+   • Saturn, Mars, Neptune: planets with PBR materials and ring shadows
+   • 3D Space Navigation:
+     - Drag with mouse / touch: 360° orbital rotation with inertia
+     - Wheel: cosmic zoom in / out
+     - Single Click/Tap: Tactical scanner HUD + collision shockwave
    ================================================================ */
 
 export const Background3D = () => {
@@ -31,11 +38,11 @@ export const Background3D = () => {
     // ---- HUD Toast Banner inside DOM for Planet Interactions ----
     const toast = document.createElement('div');
     toast.className =
-      'fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-all duration-300 opacity-0 translate-y-3 font-mono text-xs px-4 py-2 border backdrop-blur-md';
-    toast.style.backgroundColor = 'rgba(5, 8, 14, 0.85)';
+      'fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-all duration-300 opacity-0 translate-y-3 font-mono text-xs px-4 py-2 border backdrop-blur-md rounded';
+    toast.style.backgroundColor = 'rgba(5, 8, 14, 0.92)';
     toast.style.borderColor = '#00f0ff';
     toast.style.color = '#00f0ff';
-    toast.style.boxShadow = '0 0 20px rgba(0, 240, 255, 0.25)';
+    toast.style.boxShadow = '0 0 24px rgba(0, 240, 255, 0.35)';
     container.appendChild(toast);
 
     const showPlanetHUD = (name: string, telemetry: string, color = '#00f0ff') => {
@@ -52,26 +59,36 @@ export const Background3D = () => {
       }, 3500);
     };
 
+    // Botón flotante para copiar las coordenadas actuales de la cámara con 1 click
+    const camButton = document.createElement('button');
+    camButton.type = 'button';
+    camButton.className =
+      'fixed bottom-6 left-6 z-50 pointer-events-auto font-mono text-xs px-3 py-1.5 border border-[#00f0ff]/50 bg-[#05080e]/90 text-[#00f0ff] hover:bg-[#00f0ff]/20 hover:border-[#00f0ff] transition-all backdrop-blur-md rounded shadow-[0_0_15px_rgba(0,240,255,0.25)] cursor-pointer flex items-center gap-1.5';
+    camButton.innerHTML = '<span>📷</span> <span>COPIAR CÁMARA</span>';
+    container.appendChild(camButton);
+
     // ---- SCENE, CAMERA & RENDERER ----
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x010308, 0.001);
+    // Espacio transparente y negro cósmico (sin niebla)
+    scene.fog = null;
 
     const camera = new THREE.PerspectiveCamera(
-      55,
+      52,
       window.innerWidth / window.innerHeight,
       0.1,
-      4000
+      6000
     );
-    camera.position.set(0, 0, 110);
 
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
       powerPreference: 'high-performance',
     });
-    renderer.setClearColor(0x010308, 1);
+    renderer.setClearColor(0x020307, 1);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.15;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight, true);
 
@@ -86,10 +103,43 @@ export const Background3D = () => {
     canvas.style.zIndex = '0';
     container.appendChild(canvas);
 
-    // ---- PROCEDURAL TEXTURE GENERATORS ----
+    // ---- CINEMATIC POST-PROCESSING BLOOM ----
+    const composer = new EffectComposer(renderer);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const bloomPass = new UnrealBloomPass(
+      new THREE.Vector2(window.innerWidth, window.innerHeight),
+      0.55,
+      0.4,
+      0.82
+    );
+    composer.addPass(bloomPass);
+
+    const outputPass = new OutputPass();
+    composer.addPass(outputPass);
+
+    const gltfLoader = new GLTFLoader();
+    const textureLoader = new THREE.TextureLoader();
+    const mixers: THREE.AnimationMixer[] = [];
+
+    // Normalizador de tamaño de modelos GLB
+    const normalizeModelSize = (object: THREE.Object3D, targetDiameter: number) => {
+      object.updateMatrixWorld(true);
+      const box = new THREE.Box3().setFromObject(object);
+      const size = box.getSize(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z);
+      if (maxDim > 0) {
+        const factor = targetDiameter / maxDim;
+        object.scale.setScalar(factor);
+      }
+    };
+
+    // ---- TEXTURA PROCEDURAL PARA GLOW Y PARTICULAS ----
     const makeGlowTexture = (color: string, size = 128) => {
       const c = document.createElement('canvas');
-      c.width = size; c.height = size;
+      c.width = size;
+      c.height = size;
       const ctx = c.getContext('2d')!;
       const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
       g.addColorStop(0, '#ffffff');
@@ -102,118 +152,11 @@ export const Background3D = () => {
       return new THREE.CanvasTexture(c);
     };
 
-    // Sun Surface Texture (Solar granulation and solar flares)
-    const makeSunTexture = () => {
-      const c = document.createElement('canvas');
-      c.width = 512; c.height = 256;
-      const ctx = c.getContext('2d')!;
-      const g = ctx.createLinearGradient(0, 0, 0, 256);
-      g.addColorStop(0, '#ff9900');
-      g.addColorStop(0.3, '#ffcc00');
-      g.addColorStop(0.5, '#fff1a8');
-      g.addColorStop(0.7, '#ffaa00');
-      g.addColorStop(1, '#ff6600');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 512, 256);
-
-      // Granulation spots
-      for (let i = 0; i < 70; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 256;
-        const r = 4 + Math.random() * 18;
-        ctx.fillStyle = 'rgba(255, 240, 180, 0.4)';
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      return new THREE.CanvasTexture(c);
-    };
-
-    // Earth Texture: Oceans + Continents
-    const makeEarthTexture = () => {
-      const c = document.createElement('canvas');
-      c.width = 1024; c.height = 512;
-      const ctx = c.getContext('2d')!;
-      const g = ctx.createLinearGradient(0, 0, 0, 512);
-      g.addColorStop(0, '#0a2342');
-      g.addColorStop(0.5, '#0d3268');
-      g.addColorStop(1, '#081c36');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 1024, 512);
-
-      const seedNoise = (cx: number, cy: number, rx: number, ry: number, color: string) => {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        for (let a = 0; a < Math.PI * 2; a += 0.15) {
-          const rVar = 0.7 + Math.sin(a * 5) * 0.2 + Math.cos(a * 3) * 0.15;
-          const x = cx + Math.cos(a) * rx * rVar;
-          const y = cy + Math.sin(a) * ry * rVar;
-          if (a === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fill();
-      };
-      seedNoise(280, 200, 110, 100, '#2d5a27');
-      seedNoise(290, 360, 90, 130, '#1f441e');
-      seedNoise(620, 190, 180, 90, '#3b6e22');
-      seedNoise(650, 340, 110, 120, '#8c7853');
-      seedNoise(750, 240, 120, 80, '#2e5318');
-      seedNoise(820, 390, 70, 50, '#9c6644');
-
-      ctx.fillStyle = '#f0f8ff';
-      ctx.fillRect(0, 0, 1024, 35);
-      ctx.fillRect(0, 477, 1024, 35);
-
-      const tex = new THREE.CanvasTexture(c);
-      tex.wrapS = THREE.RepeatWrapping;
-      return tex;
-    };
-
-    // Earth Clouds Texture
-    const makeEarthCloudsTexture = () => {
-      const c = document.createElement('canvas');
-      c.width = 1024; c.height = 512;
-      const ctx = c.getContext('2d')!;
-      ctx.clearRect(0, 0, 1024, 512);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-      for (let i = 0; i < 40; i++) {
-        const cx = Math.random() * 1024;
-        const cy = 60 + Math.random() * 380;
-        const rx = 40 + Math.random() * 120;
-        const ry = 15 + Math.random() * 40;
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx, ry, Math.random() * 0.3 - 0.15, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      const tex = new THREE.CanvasTexture(c);
-      tex.wrapS = THREE.RepeatWrapping;
-      return tex;
-    };
-
-    // Moon Texture
-    const makeMoonTexture = () => {
-      const c = document.createElement('canvas');
-      c.width = 512; c.height = 256;
-      const ctx = c.getContext('2d')!;
-      ctx.fillStyle = '#8a939e';
-      ctx.fillRect(0, 0, 512, 256);
-      for (let i = 0; i < 60; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 256;
-        const r = 4 + Math.random() * 20;
-        ctx.fillStyle = '#656d78';
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      return new THREE.CanvasTexture(c);
-    };
-
     // Gas Giant & Saturn Rings
     const makeGasGiantTexture = () => {
       const c = document.createElement('canvas');
-      c.width = 1024; c.height = 512;
+      c.width = 1024;
+      c.height = 512;
       const ctx = c.getContext('2d')!;
       const g = ctx.createLinearGradient(0, 0, 0, 512);
       g.addColorStop(0, '#3a2e1d');
@@ -233,13 +176,14 @@ export const Background3D = () => {
 
     const makeRingsTexture = () => {
       const c = document.createElement('canvas');
-      c.width = 512; c.height = 1;
+      c.width = 512;
+      c.height = 1;
       const ctx = c.getContext('2d')!;
       const g = ctx.createLinearGradient(0, 0, 512, 0);
       g.addColorStop(0, 'rgba(0,0,0,0)');
       g.addColorStop(0.1, 'rgba(210, 185, 140, 0.4)');
       g.addColorStop(0.3, 'rgba(240, 220, 180, 0.85)');
-      g.addColorStop(0.48, 'rgba(10, 8, 5, 0.05)'); // Cassini
+      g.addColorStop(0.48, 'rgba(10, 8, 5, 0.05)');
       g.addColorStop(0.55, 'rgba(220, 195, 150, 0.7)');
       g.addColorStop(0.85, 'rgba(160, 130, 90, 0.3)');
       g.addColorStop(1, 'rgba(0,0,0,0)');
@@ -251,7 +195,8 @@ export const Background3D = () => {
     // Mars Texture
     const makeMarsTexture = () => {
       const c = document.createElement('canvas');
-      c.width = 512; c.height = 256;
+      c.width = 512;
+      c.height = 256;
       const ctx = c.getContext('2d')!;
       const g = ctx.createLinearGradient(0, 0, 0, 256);
       g.addColorStop(0, '#5a1e0b');
@@ -266,10 +211,11 @@ export const Background3D = () => {
       return new THREE.CanvasTexture(c);
     };
 
-    // Neptune / Cyan Ice Giant
+    // Neptune Texture
     const makeIceGiantTexture = () => {
       const c = document.createElement('canvas');
-      c.width = 512; c.height = 256;
+      c.width = 512;
+      c.height = 256;
       const ctx = c.getContext('2d')!;
       const g = ctx.createLinearGradient(0, 0, 0, 256);
       g.addColorStop(0, '#001a33');
@@ -280,14 +226,31 @@ export const Background3D = () => {
       return new THREE.CanvasTexture(c);
     };
 
-    // ---- COSMOS GROUP ----
+    // ========================================================
+    // 1. COSMIC PANORAMA SKYBOX SPHERE (4K HDRI 360°)
+    // ========================================================
+    const skyTexture = textureLoader.load('/textures/galaxy_panorama.jpg');
+    skyTexture.colorSpace = THREE.SRGBColorSpace;
+    skyTexture.minFilter = THREE.LinearFilter;
+    skyTexture.magFilter = THREE.LinearFilter;
+
+    const skyGeo = new THREE.SphereGeometry(2800, 64, 32);
+    const skyMat = new THREE.MeshBasicMaterial({
+      map: skyTexture,
+      side: THREE.BackSide,
+      depthWrite: false,
+    });
+    const skyMesh = new THREE.Mesh(skyGeo, skyMat);
+    scene.add(skyMesh);
+
+    // ---- COSMOS GROUP (Contenedor de planetas y órbitas) ----
     const cosmos = new THREE.Group();
     scene.add(cosmos);
 
     // ========================================================
-    // 1. STARFIELD (9,000 spectral stars)
+    // 2. EXTRA SPECTRAL STAR DUST (Puntos con paralaje 3D)
     // ========================================================
-    const STAR_COUNT = 9000;
+    const STAR_COUNT = 2000;
     const starGeo = new THREE.BufferGeometry();
     const starPos = new Float32Array(STAR_COUNT * 3);
     const starBase = new Float32Array(STAR_COUNT * 3);
@@ -295,17 +258,16 @@ export const Background3D = () => {
     const starPhase = new Float32Array(STAR_COUNT);
 
     const spectralColors = [
-      new THREE.Color('#9bb0ff'), // Blue
-      new THREE.Color('#cad7ff'), // White
-      new THREE.Color('#fff4e8'), // Yellow
-      new THREE.Color('#ffd2a1'), // Orange
-      new THREE.Color('#00f0ff'), // Cyber Cyan
-      new THREE.Color('#fcee0a'), // Cyber Yellow
+      new THREE.Color('#9bb0ff'),
+      new THREE.Color('#cad7ff'),
+      new THREE.Color('#fff4e8'),
+      new THREE.Color('#ffd2a1'),
+      new THREE.Color('#00f0ff'),
     ];
 
     for (let i = 0; i < STAR_COUNT; i++) {
       const i3 = i * 3;
-      const rad = 50 + Math.pow(Math.random(), 0.6) * 480;
+      const rad = 50 + Math.pow(Math.random(), 0.7) * 450;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(Math.random() * 2 - 1);
 
@@ -313,24 +275,30 @@ export const Background3D = () => {
       const y = rad * Math.sin(phi) * Math.sin(theta);
       const z = rad * Math.cos(phi);
 
-      starPos[i3] = x; starPos[i3 + 1] = y; starPos[i3 + 2] = z;
-      starBase[i3] = x; starBase[i3 + 1] = y; starBase[i3 + 2] = z;
+      starPos[i3] = x;
+      starPos[i3 + 1] = y;
+      starPos[i3 + 2] = z;
+      starBase[i3] = x;
+      starBase[i3 + 1] = y;
+      starBase[i3 + 2] = z;
       starPhase[i] = Math.random() * Math.PI * 2;
 
       const sc = spectralColors[Math.floor(Math.random() * spectralColors.length)];
-      starCol[i3] = sc.r; starCol[i3 + 1] = sc.g; starCol[i3 + 2] = sc.b;
+      starCol[i3] = sc.r;
+      starCol[i3 + 1] = sc.g;
+      starCol[i3 + 2] = sc.b;
     }
 
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
     starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
 
     const starMat = new THREE.PointsMaterial({
-      size: 2.2,
+      size: 1.8,
       sizeAttenuation: true,
       vertexColors: true,
       map: makeGlowTexture('#ffffff', 64),
       transparent: true,
-      opacity: 0.95,
+      opacity: 0.8,
       blending: THREE.AdditiveBlending,
       depthWrite: false,
     });
@@ -338,57 +306,15 @@ export const Background3D = () => {
     cosmos.add(starPoints);
 
     // ========================================================
-    // 2. COSMIC AURORA BOREALIS (Curtains of Light)
-    // ========================================================
-    const auroraGroup = new THREE.Group();
-    const AURORA_BANDS = 3;
-    const auroraPlanes: { mesh: THREE.Mesh; seed: number; speed: number }[] = [];
-
-    const auroraColors = [
-      new THREE.Color('#00ff88'), // Emerald Aurora
-      new THREE.Color('#00f0ff'), // Electric Cyan
-      new THREE.Color('#8a2be2'), // Violet
-    ];
-
-    for (let b = 0; b < AURORA_BANDS; b++) {
-      const planeGeo = new THREE.PlaneGeometry(160, 24, 48, 8);
-      const planeMat = new THREE.MeshBasicMaterial({
-        color: auroraColors[b],
-        transparent: true,
-        opacity: 0.08,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      });
-      const mesh = new THREE.Mesh(planeGeo, planeMat);
-      mesh.position.set(-20 + b * 20, 45 + b * 8, -120 - b * 20);
-      mesh.rotation.x = 0.35;
-      mesh.rotation.z = -0.15;
-      auroraGroup.add(mesh);
-      auroraPlanes.push({ mesh, seed: b * 1.5, speed: 0.6 + b * 0.3 });
-    }
-    cosmos.add(auroraGroup);
-
-    // ========================================================
-    // 3. THE CENTRAL SUN (Glowing Star + Corona + Flares)
+    // 3. THE CENTRAL SUN (sun.glb con rotación suave)
     // ========================================================
     const sunGroup = new THREE.Group();
-    const sunGeo = new THREE.SphereGeometry(18, 48, 48);
-    const sunMat = new THREE.MeshBasicMaterial({
-      map: makeSunTexture(),
-      color: 0xffea77,
-    });
-    const sunMesh = new THREE.Mesh(sunGeo, sunMat);
-    (sunMesh as any).planetData = {
-      name: 'SOL CENTRAL',
-      telemetry: 'Enana Amarilla (G2V) // 5,778 K // Corona activa',
-      color: '#fcee0a',
-    };
-    sunGroup.add(sunMesh);
+    let sunModel: THREE.Object3D | null = null;
+    const sunInteractiveMeshes: THREE.Mesh[] = [];
 
-    // Solar Corona Sprite
+    // Corona Sprite
     const coronaMat = new THREE.SpriteMaterial({
-      map: makeGlowTexture('#ff8800', 256),
+      map: makeGlowTexture('#ff9900', 256),
       color: 0xffcc00,
       transparent: true,
       blending: THREE.AdditiveBlending,
@@ -401,10 +327,10 @@ export const Background3D = () => {
     // Secondary Outer Glow
     const coronaOuter = new THREE.Sprite(
       new THREE.SpriteMaterial({
-        map: makeGlowTexture('#ff3300', 256),
+        map: makeGlowTexture('#ff4400', 256),
         transparent: true,
         blending: THREE.AdditiveBlending,
-        opacity: 0.45,
+        opacity: 0.4,
       })
     );
     coronaOuter.scale.set(110, 110, 1);
@@ -413,10 +339,61 @@ export const Background3D = () => {
     sunGroup.position.set(90, 45, -160);
     cosmos.add(sunGroup);
 
-    // Sunlight illuminating the solar system
-    const sunLight = new THREE.DirectionalLight(0xfff4e6, 3.5);
-    sunLight.position.copy(sunGroup.position);
-    scene.add(sunLight);
+    // Luz del sol puntual
+    const sunPointLight = new THREE.PointLight(0xfff5dd, 4.0, 1500, 0.3);
+    sunPointLight.position.copy(sunGroup.position);
+    scene.add(sunPointLight);
+
+    // Luz solar direccional proyectando sombras hacia la Tierra y planetas
+    const sunDirectional = new THREE.DirectionalLight(0xffeedd, 3.2);
+    sunDirectional.position.copy(sunGroup.position);
+    sunDirectional.target.position.set(-38, -12, -40);
+    sunDirectional.castShadow = true;
+    sunDirectional.shadow.mapSize.width = 2048;
+    sunDirectional.shadow.mapSize.height = 2048;
+    sunDirectional.shadow.camera.near = 20;
+    sunDirectional.shadow.camera.far = 700;
+    sunDirectional.shadow.camera.left = -160;
+    sunDirectional.shadow.camera.right = 160;
+    sunDirectional.shadow.camera.top = 160;
+    sunDirectional.shadow.camera.bottom = -160;
+    sunDirectional.shadow.bias = -0.0006;
+    scene.add(sunDirectional);
+    scene.add(sunDirectional.target);
+
+    // Carga de sun.glb
+    gltfLoader.load(
+      '/models/sun.glb',
+      (gltf) => {
+        sunModel = gltf.scene;
+        normalizeModelSize(sunModel, 36);
+
+        sunModel.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const m = child as THREE.Mesh;
+            (m as any).planetData = {
+              name: 'SOL CENTRAL',
+              telemetry: 'Enana Amarilla (G2V) // 5,778 K // Fusión Termonuclear Activa',
+              color: '#fcee0a',
+            };
+            sunInteractiveMeshes.push(m);
+          }
+        });
+        sunGroup.add(sunModel);
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          const sunMixer = new THREE.AnimationMixer(sunModel);
+          gltf.animations.forEach((clip) => {
+            const action = sunMixer.clipAction(clip);
+            action.timeScale = 0.05; // 20 veces más lento para rotación solar majestuosa
+            action.play();
+          });
+          mixers.push(sunMixer);
+        }
+      },
+      undefined,
+      (err) => console.warn('Could not load sun GLB:', err)
+    );
 
     // ========================================================
     // 4. PLANETARY BODIES & INTERACTIVE SHIELDS
@@ -430,7 +407,6 @@ export const Background3D = () => {
       data: { name: string; telemetry: string; color: string };
     }[] = [];
 
-    // Helper to create an electromagnetic shield wireframe
     const makeShield = (radius: number, color = 0x00f0ff) => {
       const sGeo = new THREE.SphereGeometry(radius * 1.15, 24, 24);
       const sMat = new THREE.MeshBasicMaterial({
@@ -443,28 +419,10 @@ export const Background3D = () => {
       return new THREE.Mesh(sGeo, sMat);
     };
 
-    // --- A. EARTH ---
+    // --- A. EARTH (earth.glb + Nubes animadas) ---
     const earthGroup = new THREE.Group();
-    const earthGeo = new THREE.SphereGeometry(11, 48, 48);
-    const earthMat = new THREE.MeshStandardMaterial({
-      map: makeEarthTexture(),
-      roughness: 0.65,
-      metalness: 0.1,
-    });
-    const earthMesh = new THREE.Mesh(earthGeo, earthMat);
-    earthGroup.add(earthMesh);
-
-    const earthClouds = new THREE.Mesh(
-      new THREE.SphereGeometry(11.25, 40, 40),
-      new THREE.MeshStandardMaterial({
-        map: makeEarthCloudsTexture(),
-        transparent: true,
-        opacity: 0.7,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
-    );
-    earthGroup.add(earthClouds);
+    let earthModel: THREE.Object3D | null = null;
+    const earthInteractiveMeshes: THREE.Mesh[] = [];
 
     const earthShield = makeShield(11.5, 0x00f0ff);
     earthGroup.add(earthShield);
@@ -473,46 +431,107 @@ export const Background3D = () => {
     earthGroup.rotation.z = 0.41;
     cosmos.add(earthGroup);
 
-    interactivePlanets.push({
-      mesh: earthMesh,
-      shield: earthShield,
-      group: earthGroup,
-      rotSpeed: 0.08,
-      boost: 0,
-      data: {
-        name: 'PLANETA TIERRA (TERRA)',
-        telemetry: 'Biosfera activa // Nubes y atmósfera en rotación // Escudo EM preparado',
-        color: '#00f0ff',
-      },
-    });
+    gltfLoader.load(
+      '/models/earth.glb',
+      (gltf) => {
+        earthModel = gltf.scene;
+        normalizeModelSize(earthModel, 22);
 
-    // --- B. MOON (Orbiting Earth) ---
-    const moonGeo = new THREE.SphereGeometry(2.8, 24, 24);
-    const moonMesh = new THREE.Mesh(
-      moonGeo,
-      new THREE.MeshStandardMaterial({
-        map: makeMoonTexture(),
-        roughness: 0.9,
-      })
+        earthModel.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const m = child as THREE.Mesh;
+            m.castShadow = true;
+            m.receiveShadow = true;
+
+            if (m.material) {
+              const mats = Array.isArray(m.material) ? m.material : [m.material];
+              mats.forEach((mat) => {
+                mat.needsUpdate = true;
+                if (
+                  m.name.toLowerCase().includes('cloud') ||
+                  (mat.name && mat.name.toLowerCase().includes('cloud'))
+                ) {
+                  mat.transparent = true;
+                  mat.opacity = 0.85;
+                  mat.depthWrite = false;
+                }
+              });
+            }
+            earthInteractiveMeshes.push(m);
+          }
+        });
+        earthGroup.add(earthModel);
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          const earthMixer = new THREE.AnimationMixer(earthModel);
+          gltf.animations.forEach((clip) => {
+            earthMixer.clipAction(clip).play();
+          });
+          mixers.push(earthMixer);
+        }
+      },
+      undefined,
+      (err) => console.warn('Could not load earth GLB:', err)
     );
-    const moonShield = makeShield(3, 0xbbccff);
-    moonMesh.add(moonShield);
-    cosmos.add(moonMesh);
 
-    interactivePlanets.push({
-      mesh: moonMesh,
-      shield: moonShield,
-      group: moonMesh,
-      rotSpeed: 0.1,
-      boost: 0,
-      data: {
-        name: 'LA LUNA',
-        telemetry: 'Satelite natural // Mareas gravitacionales enlazadas a Terra',
-        color: '#cad7ff',
+    // --- B. MOON (moon.glb: Escala compacta y órbita cercana para hermoso efecto flyby) ---
+    const moonGroup = new THREE.Group();
+    let moonModel: THREE.Object3D | null = null;
+    const moonInteractiveMeshes: THREE.Mesh[] = [];
+    const moonShield = makeShield(1.8, 0xcad7ff);
+    moonGroup.add(moonShield);
+    cosmos.add(moonGroup);
+
+    gltfLoader.load(
+      '/models/moon.glb',
+      (gltf) => {
+        moonModel = gltf.scene;
+        // Escala más compacta y delicada (diámetro 2.9)
+        normalizeModelSize(moonModel, 2.9);
+
+        moonModel.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const m = child as THREE.Mesh;
+            m.castShadow = true;
+            m.receiveShadow = true;
+            moonInteractiveMeshes.push(m);
+          }
+        });
+        moonGroup.add(moonModel);
       },
-    });
+      undefined,
+      (err) => console.warn('Could not load moon GLB:', err)
+    );
 
-    // --- C. SATURN ---
+    // --- C. SATELLITE (satelite.glb en órbita baja LEO) ---
+    const sateliteGroup = new THREE.Group();
+    let sateliteModel: THREE.Object3D | null = null;
+    const sateliteInteractiveMeshes: THREE.Mesh[] = [];
+    const satShield = makeShield(1.4, 0x00f0ff);
+    sateliteGroup.add(satShield);
+    cosmos.add(sateliteGroup);
+
+    gltfLoader.load(
+      '/models/satelite.glb',
+      (gltf) => {
+        sateliteModel = gltf.scene;
+        normalizeModelSize(sateliteModel, 1.6);
+
+        sateliteModel.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const m = child as THREE.Mesh;
+            m.castShadow = true;
+            m.receiveShadow = true;
+            sateliteInteractiveMeshes.push(m);
+          }
+        });
+        sateliteGroup.add(sateliteModel);
+      },
+      undefined,
+      (err) => console.warn('Could not load satelite GLB:', err)
+    );
+
+    // --- D. SATURN (Reubicado lejos de la línea visual del Sol para no estorbar) ---
     const saturnGroup = new THREE.Group();
     const saturnMesh = new THREE.Mesh(
       new THREE.SphereGeometry(15, 48, 48),
@@ -521,9 +540,11 @@ export const Background3D = () => {
         roughness: 0.75,
       })
     );
+    saturnMesh.castShadow = true;
+    saturnMesh.receiveShadow = true;
     saturnGroup.add(saturnMesh);
 
-    // Rings
+    // Anillos de Saturno
     const ringGeo = new THREE.RingGeometry(20, 36, 96);
     const rPos = ringGeo.attributes.position;
     const rUV = ringGeo.attributes.uv;
@@ -533,20 +554,23 @@ export const Background3D = () => {
     }
     const ringMesh = new THREE.Mesh(
       ringGeo,
-      new THREE.MeshBasicMaterial({
+      new THREE.MeshStandardMaterial({
         map: makeRingsTexture(),
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.88,
+        roughness: 0.8,
       })
     );
+    ringMesh.receiveShadow = true;
     ringMesh.rotation.x = Math.PI / 2.3;
     saturnGroup.add(ringMesh);
 
     const saturnShield = makeShield(16, 0xfcee0a);
     saturnGroup.add(saturnShield);
 
-    saturnGroup.position.set(50, 18, -90);
+    // Posicionado lateralmente a (140, -25, -60) para no obstaculizar la vista entre la Tierra y el Sol
+    saturnGroup.position.set(140, -25, -60);
     saturnGroup.rotation.z = -0.35;
     cosmos.add(saturnGroup);
 
@@ -563,7 +587,7 @@ export const Background3D = () => {
       },
     });
 
-    // --- D. MARS ---
+    // --- E. MARS ---
     const marsMesh = new THREE.Mesh(
       new THREE.SphereGeometry(6.5, 32, 32),
       new THREE.MeshStandardMaterial({
@@ -571,6 +595,9 @@ export const Background3D = () => {
         roughness: 0.85,
       })
     );
+    marsMesh.castShadow = true;
+    marsMesh.receiveShadow = true;
+
     const marsShield = makeShield(7, 0xff003c);
     marsMesh.add(marsShield);
     marsMesh.position.set(-65, 35, -130);
@@ -590,7 +617,7 @@ export const Background3D = () => {
       },
     });
 
-    // --- E. NEPTUNE ---
+    // --- F. NEPTUNE ---
     const neptuneMesh = new THREE.Mesh(
       new THREE.SphereGeometry(9, 32, 32),
       new THREE.MeshStandardMaterial({
@@ -598,6 +625,9 @@ export const Background3D = () => {
         roughness: 0.55,
       })
     );
+    neptuneMesh.castShadow = true;
+    neptuneMesh.receiveShadow = true;
+
     const neptuneShield = makeShield(9.5, 0x00f0ff);
     neptuneMesh.add(neptuneShield);
     neptuneMesh.position.set(75, -30, -170);
@@ -616,11 +646,11 @@ export const Background3D = () => {
       },
     });
 
-    // Ambient Space Light
-    scene.add(new THREE.AmbientLight(0x182238, 1.4));
+    // Luz ambiental neutra espacial
+    scene.add(new THREE.AmbientLight(0x1a202c, 1.4));
 
     // ========================================================
-    // 5. RANDOM SPACE EVENTS (Naves, Meteoros, Cometas)
+    // 5. RANDOM SPACE EVENTS (Naves, Meteoros)
     // ========================================================
     interface SpaceEvent {
       mesh: THREE.Object3D;
@@ -633,7 +663,6 @@ export const Background3D = () => {
     const MAX_EVENTS = 2;
     let nextEventTimer = 2.5 + Math.random() * 4;
 
-    // Fast Meteor
     const spawnMeteor = (): SpaceEvent => {
       const group = new THREE.Group();
       const head = new THREE.Sprite(
@@ -679,14 +708,17 @@ export const Background3D = () => {
             arr[i * 3 + 1] = arr[(i - 1) * 3 + 1];
             arr[i * 3 + 2] = arr[(i - 1) * 3 + 2];
           }
-          arr[0] = 0; arr[1] = 0; arr[2] = 0;
+          arr[0] = 0;
+          arr[1] = 0;
+          arr[2] = 0;
           tGeo.attributes.position.needsUpdate = true;
         },
-        done: function () { return this.life >= this.maxLife; },
+        done: function () {
+          return this.life >= this.maxLife;
+        },
       };
     };
 
-    // Exploration Spacecraft with cyan ion engine
     const spawnShip = (): SpaceEvent => {
       const group = new THREE.Group();
       const hull = new THREE.Mesh(
@@ -720,14 +752,16 @@ export const Background3D = () => {
           group.position.add(vel.clone().multiplyScalar(dt * 25));
           engine.material.opacity = 0.6 + Math.sin(performance.now() * 0.02) * 0.35;
         },
-        done: function () { return this.life >= this.maxLife; },
+        done: function () {
+          return this.life >= this.maxLife;
+        },
       };
     };
 
     const eventSpawners = [spawnMeteor, spawnMeteor, spawnShip];
 
     // ========================================================
-    // 6. CLICK/TAP IMPACT & EXPLOSION COLLISION SYSTEM
+    // 6. CLICK/TAP IMPACT & COLLISION FX
     // ========================================================
     interface CollisionFx {
       group: THREE.Group;
@@ -744,7 +778,6 @@ export const Background3D = () => {
       const group = new THREE.Group();
       group.position.copy(worldPoint);
 
-      // Flash
       const flash = new THREE.Sprite(
         new THREE.SpriteMaterial({
           map: makeGlowTexture('#fcee0a', 128),
@@ -755,7 +788,6 @@ export const Background3D = () => {
       flash.scale.set(8, 8, 1);
       group.add(flash);
 
-      // Expanding Shockwave Ring
       const rGeo = new THREE.RingGeometry(0.5, 1.2, 32);
       const rMat = new THREE.MeshBasicMaterial({
         color: 0x00f0ff,
@@ -768,14 +800,15 @@ export const Background3D = () => {
       ring.lookAt(camera.position);
       group.add(ring);
 
-      // Fragment sparks
       const SPARK_COUNT = 60;
       const sGeo = new THREE.BufferGeometry();
       const sPos = new Float32Array(SPARK_COUNT * 3);
       const vels = new Float32Array(SPARK_COUNT * 3);
 
       for (let i = 0; i < SPARK_COUNT; i++) {
-        sPos[i * 3] = 0; sPos[i * 3 + 1] = 0; sPos[i * 3 + 2] = 0;
+        sPos[i * 3] = 0;
+        sPos[i * 3 + 1] = 0;
+        sPos[i * 3 + 2] = 0;
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
         const speed = 0.8 + Math.random() * 2.2;
@@ -812,15 +845,34 @@ export const Background3D = () => {
     };
 
     // ========================================================
-    // 7. INTERACTION LISTENERS (Raycasting for Planets & Collisions)
+    // 7. CINEMATIC CAMERA SETUP (PERSPECTIVA EXACTA DE LA CAPTURA)
     // ========================================================
+    // Encuadre idéntico a la captura: Tierra en primer plano a la izquierda, Sol en el horizonte derecho
+  //  const baseCamPos = new THREE.Vector3(-36.5, -16.0, -17.5);
+   // const baseTarget = new THREE.Vector3(65, 28, -135);
+const baseCamPos = new THREE.Vector3(-30.8, -11.3, -24.1);
+const baseTarget = new THREE.Vector3(34.8, 28.2, -145.8);
+    let orbitYaw = 0;
+    let orbitPitch = 0;
+    let dragVelYaw = 0;
+    let dragVelPitch = 0;
+
+    let zoomScale = 1.0;
+    let targetZoomScale = 1.0;
+
     const raycaster = new THREE.Raycaster();
     const mouseVec2 = new THREE.Vector2();
-    let mouseNX = 0, mouseNY = 0;
-    let smoothMX = 0, smoothMY = 0;
+    let mouseNX = 0,
+      mouseNY = 0;
+    let smoothMX = 0,
+      smoothMY = 0;
+
     let isDragging = false;
-    let prevX = 0, prevY = 0;
-    let dragVelX = 0, dragVelY = 0;
+    let hasDragged = false;
+    let startX = 0,
+      startY = 0;
+    let prevX = 0,
+      prevY = 0;
     let scrollY = 0;
 
     const handlePointerAction = (clientX: number, clientY: number) => {
@@ -830,46 +882,107 @@ export const Background3D = () => {
       );
       raycaster.setFromCamera(mouseVec2, camera);
 
-      // Check for click on Sun first
-      const sunHits = raycaster.intersectObject(sunMesh);
-      if (sunHits.length > 0) {
-        showPlanetHUD(
-          (sunMesh as any).planetData.name,
-          (sunMesh as any).planetData.telemetry,
-          (sunMesh as any).planetData.color
-        );
-        corona.scale.multiplyScalar(1.3);
-        triggerCosmicCollision(sunHits[0].point);
-        return;
+      // Click en el Sol
+      if (sunInteractiveMeshes.length > 0) {
+        const sunHits = raycaster.intersectObjects(sunInteractiveMeshes, true);
+        if (sunHits.length > 0) {
+          showPlanetHUD(
+            'SOL CENTRAL',
+            'Enana Amarilla (G2V) // 5,778 K // Fusión Termonuclear Activa',
+            '#fcee0a'
+          );
+          corona.scale.multiplyScalar(1.35);
+          triggerCosmicCollision(sunHits[0].point);
+          return;
+        }
       }
 
-      // Check for click on Planets
-      const planetMeshes = interactivePlanets.map((p) => p.mesh);
-      const hits = raycaster.intersectObjects(planetMeshes);
+      // Click en la Tierra
+      if (earthInteractiveMeshes.length > 0) {
+        const earthHits = raycaster.intersectObjects(earthInteractiveMeshes, true);
+        if (earthHits.length > 0) {
+          (earthShield.material as THREE.MeshBasicMaterial).opacity = 0.95;
+          showPlanetHUD(
+            'PLANETA TIERRA (TERRA)',
+            'Biosfera activa // Nubes y atmósfera en rotación // Escudo EM preparado',
+            '#00f0ff'
+          );
+          triggerCosmicCollision(earthHits[0].point);
+          return;
+        }
+      }
+
+      // Click en la Luna
+      if (moonInteractiveMeshes.length > 0) {
+        const moonHits = raycaster.intersectObjects(moonInteractiveMeshes, true);
+        if (moonHits.length > 0) {
+          (moonShield.material as THREE.MeshBasicMaterial).opacity = 0.95;
+          showPlanetHUD(
+            'LA LUNA (LUNA)',
+            'Satélite natural de Terra // Bloqueo de marea // Cráteres y regolito',
+            '#cbd5e1'
+          );
+          triggerCosmicCollision(moonHits[0].point);
+          return;
+        }
+      }
+
+      // Click en el Satélite
+      if (sateliteInteractiveMeshes.length > 0) {
+        const satHits = raycaster.intersectObjects(sateliteInteractiveMeshes, true);
+        if (satHits.length > 0) {
+          (satShield.material as THREE.MeshBasicMaterial).opacity = 0.95;
+          showPlanetHUD(
+            'SATÉLITE ORBITAL (PW-SAT2)',
+            'Órbita baja LEO // Enlace de datos de telemetría activo // Paneles solares desplegados',
+            '#00f0ff'
+          );
+          triggerCosmicCollision(satHits[0].point);
+          return;
+        }
+      }
+
+      // Click en otros planetas
+      const otherMeshes = interactivePlanets.map((p) => p.mesh);
+      const hits = raycaster.intersectObjects(otherMeshes);
 
       if (hits.length > 0) {
         const hitMesh = hits[0].object as THREE.Mesh;
         const matched = interactivePlanets.find((p) => p.mesh === hitMesh);
         if (matched) {
-          matched.boost = 0.45; // boost rotation speed
-          (matched.shield.material as THREE.MeshBasicMaterial).opacity = 0.95; // flash shield
+          matched.boost = 0.45;
+          (matched.shield.material as THREE.MeshBasicMaterial).opacity = 0.95;
           showPlanetHUD(matched.data.name, matched.data.telemetry, matched.data.color);
           triggerCosmicCollision(hits[0].point);
           return;
         }
       }
 
-      // Click on empty space: trigger cosmic meteor impact
+      // Click en el espacio vacío
       const hitWorld = new THREE.Vector3();
-      raycaster.ray.at(55, hitWorld);
+      raycaster.ray.at(45, hitWorld);
       triggerCosmicCollision(hitWorld);
     };
 
     const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.closest('button') ||
+          target.closest('a') ||
+          target.closest('input') ||
+          target.closest('textarea') ||
+          target.closest('.interactive-clickable'))
+      ) {
+        return;
+      }
+
       isDragging = true;
+      hasDragged = false;
+      startX = e.clientX;
+      startY = e.clientY;
       prevX = e.clientX;
       prevY = e.clientY;
-      handlePointerAction(e.clientX, e.clientY);
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -879,25 +992,84 @@ export const Background3D = () => {
       if (isDragging) {
         const dx = e.clientX - prevX;
         const dy = e.clientY - prevY;
-        dragVelX += dx * 0.0006;
-        dragVelY += dy * 0.0006;
+        const totalDist = Math.hypot(e.clientX - startX, e.clientY - startY);
+        if (totalDist > 6) {
+          hasDragged = true;
+        }
+        dragVelYaw += dx * 0.0018;
+        dragVelPitch += dy * 0.0018;
         prevX = e.clientX;
         prevY = e.clientY;
       }
     };
 
-    const onPointerUp = () => {
+    const onPointerUp = (e: PointerEvent) => {
+      if (isDragging && !hasDragged) {
+        handlePointerAction(e.clientX, e.clientY);
+      }
       isDragging = false;
+    };
+
+    const onWheel = (e: WheelEvent) => {
+      targetZoomScale = THREE.MathUtils.clamp(
+        targetZoomScale + e.deltaY * 0.0012,
+        0.5,
+        3.0
+      );
     };
 
     const onScroll = () => {
       scrollY = window.scrollY;
     };
 
+    const currentLookTarget = new THREE.Vector3().copy(baseTarget);
+
+    const printCameraCoords = () => {
+      const code = `const baseCamPos = new THREE.Vector3(${camera.position.x.toFixed(1)}, ${camera.position.y.toFixed(1)}, ${camera.position.z.toFixed(1)});\nconst baseTarget = new THREE.Vector3(${currentLookTarget.x.toFixed(1)}, ${currentLookTarget.y.toFixed(1)}, ${currentLookTarget.z.toFixed(1)});`;
+      console.log(
+        `%c[CÁMARA COORDENADAS COPIADAS]:\n${code}`,
+        'color: #00f0ff; font-weight: bold; font-size: 14px; background: #05080e; padding: 8px; border: 1px solid #00f0ff; border-radius: 4px;'
+      );
+      showPlanetHUD(
+        'CÁMARA COPIADA',
+        `X:${camera.position.x.toFixed(1)} Y:${camera.position.y.toFixed(1)} Z:${camera.position.z.toFixed(1)} (Código en portapapeles)`,
+        '#00f0ff'
+      );
+      try {
+        navigator.clipboard.writeText(code);
+      } catch {}
+      return code;
+    };
+
+    camButton.onclick = (e) => {
+      e.stopPropagation();
+      printCameraCoords();
+    };
+
+    try {
+      Object.defineProperty(window, 'c', {
+        get: printCameraCoords,
+        configurable: true,
+      });
+      Object.defineProperty(window, 'cam', {
+        get: printCameraCoords,
+        configurable: true,
+      });
+      (window as any).getCam = printCameraCoords;
+    } catch {}
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'c' || e.key === 'C') {
+        printCameraCoords();
+      }
+    };
+
     window.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('keydown', onKeyDown);
 
     // Zoom-proof Resizer
     const handleResize = () => {
@@ -907,6 +1079,8 @@ export const Background3D = () => {
       camera.updateProjectionMatrix();
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.setSize(w, h, true);
+      composer.setSize(w, h);
+      bloomPass.resolution.set(w, h);
     };
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleResize);
@@ -927,37 +1101,93 @@ export const Background3D = () => {
       lastTime = now;
       const t = (now - t0) * 0.001;
 
-      // Cosmos auto-rotation & inertia
-      cosmos.rotation.y += 0.0008 * dt * 60;
-      cosmos.rotation.x += 0.0002 * dt * 60;
+      // Update animation mixers
+      for (let i = 0; i < mixers.length; i++) {
+        mixers[i].update(dt);
+      }
 
-      cosmos.rotation.y += dragVelX;
-      cosmos.rotation.x += dragVelY;
-      dragVelX *= 0.94;
-      dragVelY *= 0.94;
+      // Giro inercial 3D libre
+      orbitYaw += dragVelYaw;
+      orbitPitch = THREE.MathUtils.clamp(orbitPitch + dragVelPitch, -1.2, 1.2);
+      dragVelYaw *= 0.92;
+      dragVelPitch *= 0.92;
 
-      // Mouse Parallax & Scroll camera zoom
+      // Zoom interpolado suave
+      zoomScale += (targetZoomScale - zoomScale) * 0.08;
+
+      // Mouse Parallax & Scroll
       smoothMX += (mouseNX - smoothMX) * 0.04;
       smoothMY += (mouseNY - smoothMY) * 0.04;
-      const scrollZ = Math.min(scrollY * 0.015, 25);
-      camera.position.x = smoothMX * 14;
-      camera.position.y = smoothMY * 9;
-      camera.position.z = 110 - scrollZ;
-      camera.lookAt(0, 0, 0);
+      const scrollOffset = scrollY * 0.015;
 
-      // Sun pulsing corona
-      const sunPulse = 1 + Math.sin(t * 3) * 0.06;
+      // Cámara orbital en torno a la Tierra mirando al Sol
+      const earthCenter = earthGroup.position;
+      const relCam = new THREE.Vector3().subVectors(baseCamPos, earthCenter);
+
+      relCam.applyAxisAngle(new THREE.Vector3(0, 1, 0), orbitYaw);
+      relCam.applyAxisAngle(new THREE.Vector3(1, 0, 0), orbitPitch);
+      relCam.multiplyScalar(zoomScale);
+
+      camera.position.copy(earthCenter).add(relCam);
+      camera.position.x += smoothMX * 2.5;
+      camera.position.y += smoothMY * 1.8 + scrollOffset * 0.2;
+
+      const lookTarget = new THREE.Vector3().copy(baseTarget);
+      lookTarget.applyAxisAngle(new THREE.Vector3(0, 1, 0), orbitYaw * 0.6);
+      lookTarget.x += smoothMX * 4;
+      lookTarget.y += smoothMY * 3;
+      currentLookTarget.copy(lookTarget);
+      camera.lookAt(lookTarget);
+
+      // Domo de estrellas 4K siempre centrado en el observador
+      skyMesh.position.copy(camera.position);
+      skyMesh.rotation.y += 0.00004 * dt * 60;
+
+      // Pulsación suave de la corona solar
+      const sunPulse = 1 + Math.sin(t * 1.5) * 0.03;
       corona.scale.set(65 * sunPulse, 65 * sunPulse, 1);
-      sunMesh.rotation.y = t * 0.03;
+      if (sunModel) {
+        // Rotación axial lenta y majestuosa
+        sunModel.rotation.y += 0.00015 * dt * 60;
+      }
 
-      // Earth & Cloud layer rotations
-      earthMesh.rotation.y += (0.08 + interactivePlanets[0].boost) * dt * 30;
-      earthClouds.rotation.y += 0.12 * dt * 30;
-      saturnMesh.rotation.y += (0.05 + interactivePlanets[2].boost) * dt * 30;
-      marsMesh.rotation.y += (0.07 + interactivePlanets[3].boost) * dt * 30;
-      neptuneMesh.rotation.y += (0.06 + interactivePlanets[4].boost) * dt * 30;
+      // Rotación suave del globo terrestre
+      if (earthModel) {
+        earthModel.rotation.y +=
+          (0.004 + (earthShield.material as THREE.MeshBasicMaterial).opacity * 0.02) *
+          dt *
+          60;
+      }
 
-      // Decay planet rotation boosts and shields
+      // --- ÓRBITA DE LA LUNA (moon.glb: radio 16.5 para efecto flyby cinematográfico cercano) ---
+      const moonOrbitRadius = 16.5;
+      const moonAngle = t * 0.32;
+      moonGroup.position.set(
+        earthGroup.position.x + Math.cos(moonAngle) * moonOrbitRadius,
+        earthGroup.position.y + Math.sin(moonAngle) * 3.5,
+        earthGroup.position.z + Math.sin(moonAngle) * moonOrbitRadius
+      );
+      if (moonModel) {
+        moonModel.rotation.y = moonAngle; // Bloqueo de marea mirando hacia Terra
+      }
+
+      // --- ÓRBITA DEL SATÉLITE (satelite.glb) EN ÓRBITA BAJA (LEO) ---
+      const satOrbitRadius = 13.8;
+      const satAngle = t * 0.85; // Revolución ágil alrededor de la Tierra
+      sateliteGroup.position.set(
+        earthGroup.position.x + Math.cos(satAngle) * satOrbitRadius,
+        earthGroup.position.y + Math.sin(satAngle * 1.3) * 5,
+        earthGroup.position.z + Math.sin(satAngle) * satOrbitRadius
+      );
+      sateliteGroup.rotation.y = -satAngle + Math.PI / 2;
+      sateliteGroup.rotation.z = Math.sin(satAngle) * 0.25;
+
+      // Rotación de otros planetas
+      saturnMesh.rotation.y += (0.05 + interactivePlanets[0]?.boost || 0) * dt * 30;
+      marsMesh.rotation.y += (0.07 + interactivePlanets[1]?.boost || 0) * dt * 30;
+      neptuneMesh.rotation.y += (0.06 + interactivePlanets[2]?.boost || 0) * dt * 30;
+
+      // Decaimiento de escudos
       interactivePlanets.forEach((p) => {
         if (p.boost > 0) p.boost = Math.max(0, p.boost - dt * 0.2);
         const mat = p.shield.material as THREE.MeshBasicMaterial;
@@ -967,27 +1197,25 @@ export const Background3D = () => {
         }
       });
 
-      // Moon Orbiting Earth
-      const moonOrbitRadius = 24;
-      moonMesh.position.set(
-        earthGroup.position.x + Math.cos(t * 0.4) * moonOrbitRadius,
-        earthGroup.position.y + Math.sin(t * 0.4) * 4,
-        earthGroup.position.z + Math.sin(t * 0.4) * moonOrbitRadius
-      );
-      moonMesh.rotation.y = t * 0.1;
+      const earthShieldMat = earthShield.material as THREE.MeshBasicMaterial;
+      if (earthShieldMat.opacity > 0.01) {
+        earthShieldMat.opacity -= dt * 0.55;
+        earthShield.rotation.y += dt * 1.8;
+      }
 
-      // Shimmering Aurora Borealis Waves
-      auroraPlanes.forEach((ap) => {
-        const pos = ap.mesh.geometry.attributes.position;
-        for (let i = 0; i < pos.count; i++) {
-          const x = pos.getX(i);
-          const wave = Math.sin(t * ap.speed + x * 0.08 + ap.seed) * 2.5;
-          pos.setZ(i, wave);
-        }
-        pos.needsUpdate = true;
-      });
+      const moonShieldMat = moonShield.material as THREE.MeshBasicMaterial;
+      if (moonShieldMat.opacity > 0.01) {
+        moonShieldMat.opacity -= dt * 0.55;
+        moonShield.rotation.y += dt * 1.8;
+      }
 
-      // Twinkling Starfield
+      const satShieldMat = satShield.material as THREE.MeshBasicMaterial;
+      if (satShieldMat.opacity > 0.01) {
+        satShieldMat.opacity -= dt * 0.55;
+        satShield.rotation.y += dt * 1.8;
+      }
+
+      // Titileo de polvo estelar
       const sArr = starGeo.attributes.position.array as Float32Array;
       for (let i = 0; i < STAR_COUNT; i++) {
         const i3 = i * 3;
@@ -996,7 +1224,7 @@ export const Background3D = () => {
       }
       starGeo.attributes.position.needsUpdate = true;
 
-      // Random space events
+      // Eventos espaciales aleatorios
       nextEventTimer -= dt;
       if (nextEventTimer <= 0 && activeEvents.length < MAX_EVENTS) {
         const spawner = eventSpawners[Math.floor(Math.random() * eventSpawners.length)];
@@ -1017,21 +1245,18 @@ export const Background3D = () => {
         }
       }
 
-      // Active Collisions / Impacts Update
+      // Colisiones activas
       for (let i = activeCollisions.length - 1; i >= 0; i--) {
         const col = activeCollisions[i];
         col.life += dt;
         const progress = col.life / col.maxLife;
 
-        // Flash fades quickly
         col.flash.material.opacity = Math.max(0, 1 - progress * 2.5);
 
-        // Ring expands and fades
         const ringScale = 1 + progress * 22;
         col.ring.scale.set(ringScale, ringScale, 1);
         (col.ring.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.9 * (1 - progress));
 
-        // Fragment sparks fly out
         const pArr = col.sparks.geometry.attributes.position.array as Float32Array;
         for (let j = 0; j < col.vels.length / 3; j++) {
           pArr[j * 3] += col.vels[j * 3] * dt * 25;
@@ -1050,7 +1275,8 @@ export const Background3D = () => {
         }
       }
 
-      renderer.render(scene, camera);
+      // Renderizado con Bloom
+      composer.render();
     };
 
     animate();
@@ -1061,13 +1287,24 @@ export const Background3D = () => {
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('wheel', onWheel);
       window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
       ro.disconnect();
 
       if (container.contains(toast)) container.removeChild(toast);
+      if (container.contains(camButton)) container.removeChild(camButton);
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
+      try {
+        delete (window as any).c;
+        delete (window as any).cam;
+      } catch {}
+      skyGeo.dispose();
+      skyMat.dispose();
+      skyTexture.dispose();
+      composer.dispose();
       renderer.dispose();
     };
   }, []);
