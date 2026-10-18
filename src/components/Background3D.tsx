@@ -818,10 +818,6 @@ export const Background3D = () => {
     // 7. CINEMATIC CAMERA SETUP (PERSPECTIVA EXACTA DE LA CAPTURA)
     // ========================================================
     // Encuadre idéntico a la captura: Tierra en primer plano a la izquierda, Sol en el horizonte derecho
-  //  const baseCamPos = new THREE.Vector3(-36.5, -16.0, -17.5);
-   // const baseTarget = new THREE.Vector3(65, 28, -135);
-//const baseCamPos = new THREE.Vector3(-30.8, -11.3, -24.1);
-//const baseTarget = new THREE.Vector3(34.8, 28.2, -145.8);
 
 const baseCamPos = new THREE.Vector3(-35.1, -13.7, -22.9);
 const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
@@ -1077,6 +1073,10 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
 
       // Zoom interpolado suave
       zoomScale += (targetZoomScale - zoomScale) * 0.08;
+
+      // Mouse Parallax suave
+      smoothMX += (mouseNX - smoothMX) * 0.04;
+      smoothMY += (mouseNY - smoothMY) * 0.04;
 
       // Progreso de scroll de la página (0.0 al inicio, 1.0 al final de la página)
       const maxScroll = Math.max(
