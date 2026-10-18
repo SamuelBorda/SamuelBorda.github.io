@@ -59,13 +59,18 @@ export const Background3D = () => {
       }, 3500);
     };
 
-    // Botón flotante para copiar las coordenadas actuales de la cámara con 1 click
-    const camButton = document.createElement('button');
-    camButton.type = 'button';
-    camButton.className =
-      'fixed bottom-6 left-6 z-50 pointer-events-auto font-mono text-xs px-3 py-1.5 border border-[#00f0ff]/50 bg-[#05080e]/90 text-[#00f0ff] hover:bg-[#00f0ff]/20 hover:border-[#00f0ff] transition-all backdrop-blur-md rounded shadow-[0_0_15px_rgba(0,240,255,0.25)] cursor-pointer flex items-center gap-1.5';
-    camButton.innerHTML = '<span>📷</span> <span>COPIAR CÁMARA</span>';
-    container.appendChild(camButton);
+    // Flag para herramientas de calibración de cámara (desactivado por defecto)
+    const DEBUG_CAMERA = false;
+
+    let camButton: HTMLButtonElement | null = null;
+    if (DEBUG_CAMERA) {
+      camButton = document.createElement('button');
+      camButton.type = 'button';
+      camButton.className =
+        'fixed bottom-6 left-6 z-50 pointer-events-auto font-mono text-xs px-3 py-1.5 border border-[#00f0ff]/50 bg-[#05080e]/90 text-[#00f0ff] hover:bg-[#00f0ff]/20 hover:border-[#00f0ff] transition-all backdrop-blur-md rounded shadow-[0_0_15px_rgba(0,240,255,0.25)] cursor-pointer flex items-center gap-1.5';
+      camButton.innerHTML = '<span>📷</span> <span>COPIAR CÁMARA</span>';
+      container.appendChild(camButton);
+    }
 
     // ---- SCENE, CAMERA & RENDERER ----
     const scene = new THREE.Scene();
@@ -118,6 +123,34 @@ export const Background3D = () => {
 
     const outputPass = new OutputPass();
     composer.addPass(outputPass);
+
+    const BASE_FOV = 52;
+    const BASE_ASPECT = 16 / 9;
+
+    const updateCameraProjection = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      const aspect = w / h;
+      camera.aspect = aspect;
+
+      // Mantener la relación horizontal (ancho) igual que en PC para ver toda la escena en móviles
+      if (aspect < BASE_ASPECT) {
+        const baseFovRad = THREE.MathUtils.degToRad(BASE_FOV);
+        const tanHalfHFov = Math.tan(baseFovRad / 2) * BASE_ASPECT;
+        const vFovRad = 2 * Math.atan(tanHalfHFov / aspect);
+        camera.fov = THREE.MathUtils.radToDeg(vFovRad);
+      } else {
+        camera.fov = BASE_FOV;
+      }
+
+      camera.updateProjectionMatrix();
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(w, h, true);
+      composer.setSize(w, h);
+      bloomPass.resolution.set(w, h);
+    };
+
+    updateCameraProjection();
 
     const gltfLoader = new GLTFLoader();
     const textureLoader = new THREE.TextureLoader();
@@ -761,88 +794,8 @@ export const Background3D = () => {
     const eventSpawners = [spawnMeteor, spawnMeteor, spawnShip];
 
     // ========================================================
-    // 6. CLICK/TAP IMPACT & COLLISION FX
+    // 6. TACTICAL HUD & INTERACTION
     // ========================================================
-    interface CollisionFx {
-      group: THREE.Group;
-      ring: THREE.Mesh;
-      flash: THREE.Sprite;
-      sparks: THREE.Points;
-      vels: Float32Array;
-      life: number;
-      maxLife: number;
-    }
-    const activeCollisions: CollisionFx[] = [];
-
-    const triggerCosmicCollision = (worldPoint: THREE.Vector3) => {
-      const group = new THREE.Group();
-      group.position.copy(worldPoint);
-
-      const flash = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: makeGlowTexture('#fcee0a', 128),
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-        })
-      );
-      flash.scale.set(8, 8, 1);
-      group.add(flash);
-
-      const rGeo = new THREE.RingGeometry(0.5, 1.2, 32);
-      const rMat = new THREE.MeshBasicMaterial({
-        color: 0x00f0ff,
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.9,
-        blending: THREE.AdditiveBlending,
-      });
-      const ring = new THREE.Mesh(rGeo, rMat);
-      ring.lookAt(camera.position);
-      group.add(ring);
-
-      const SPARK_COUNT = 60;
-      const sGeo = new THREE.BufferGeometry();
-      const sPos = new Float32Array(SPARK_COUNT * 3);
-      const vels = new Float32Array(SPARK_COUNT * 3);
-
-      for (let i = 0; i < SPARK_COUNT; i++) {
-        sPos[i * 3] = 0;
-        sPos[i * 3 + 1] = 0;
-        sPos[i * 3 + 2] = 0;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(Math.random() * 2 - 1);
-        const speed = 0.8 + Math.random() * 2.2;
-        vels[i * 3] = Math.sin(phi) * Math.cos(theta) * speed;
-        vels[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * speed;
-        vels[i * 3 + 2] = Math.cos(phi) * speed;
-      }
-      sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
-
-      const sparks = new THREE.Points(
-        sGeo,
-        new THREE.PointsMaterial({
-          size: 3.5,
-          map: makeGlowTexture('#ffaa00', 64),
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-        })
-      );
-      group.add(sparks);
-
-      scene.add(group);
-      soundManager.playWarp();
-
-      activeCollisions.push({
-        group,
-        ring,
-        flash,
-        sparks,
-        vels,
-        life: 0,
-        maxLife: 1.6,
-      });
-    };
 
     // ========================================================
     // 7. CINEMATIC CAMERA SETUP (PERSPECTIVA EXACTA DE LA CAPTURA)
@@ -894,8 +847,6 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
             'Enana Amarilla (G2V) // 5,778 K // Fusión Termonuclear Activa',
             '#fcee0a'
           );
-          corona.scale.multiplyScalar(1.35);
-          triggerCosmicCollision(sunHits[0].point);
           return;
         }
       }
@@ -910,7 +861,6 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
             'Biosfera activa // Nubes y atmósfera en rotación // Escudo EM preparado',
             '#00f0ff'
           );
-          triggerCosmicCollision(earthHits[0].point);
           return;
         }
       }
@@ -925,7 +875,6 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
             'Satélite natural de Terra // Bloqueo de marea // Cráteres y regolito',
             '#cbd5e1'
           );
-          triggerCosmicCollision(moonHits[0].point);
           return;
         }
       }
@@ -940,7 +889,6 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
             'Órbita baja LEO // Enlace de datos de telemetría activo // Paneles solares desplegados',
             '#00f0ff'
           );
-          triggerCosmicCollision(satHits[0].point);
           return;
         }
       }
@@ -956,15 +904,11 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
           matched.boost = 0.45;
           (matched.shield.material as THREE.MeshBasicMaterial).opacity = 0.95;
           showPlanetHUD(matched.data.name, matched.data.telemetry, matched.data.color);
-          triggerCosmicCollision(hits[0].point);
           return;
         }
       }
 
-      // Click en el espacio vacío
-      const hitWorld = new THREE.Vector3();
-      raycaster.ray.at(45, hitWorld);
-      triggerCosmicCollision(hitWorld);
+      // Click en espacio vacío: silencioso y limpio (sin explosión)
     };
 
     const onPointerDown = (e: PointerEvent) => {
@@ -1014,10 +958,11 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
     };
 
     const onWheel = (e: WheelEvent) => {
+      // El zoom inicial (1.0) es el límite más cercano: no se puede acercar más de lo que estaba al inicio
       targetZoomScale = THREE.MathUtils.clamp(
         targetZoomScale + e.deltaY * 0.0012,
-        0.5,
-        3.0
+        1.0,
+        2.8
       );
     };
 
@@ -1044,46 +989,44 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
       return code;
     };
 
-    camButton.onclick = (e) => {
-      e.stopPropagation();
-      printCameraCoords();
-    };
-
-    try {
-      Object.defineProperty(window, 'c', {
-        get: printCameraCoords,
-        configurable: true,
-      });
-      Object.defineProperty(window, 'cam', {
-        get: printCameraCoords,
-        configurable: true,
-      });
-      (window as any).getCam = printCameraCoords;
-    } catch {}
-
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'c' || e.key === 'C') {
-        printCameraCoords();
+    let onKeyDown: ((e: KeyboardEvent) => void) | null = null;
+    if (DEBUG_CAMERA) {
+      if (camButton) {
+        camButton.onclick = (e) => {
+          e.stopPropagation();
+          printCameraCoords();
+        };
       }
-    };
+
+      try {
+        Object.defineProperty(window, 'c', {
+          get: printCameraCoords,
+          configurable: true,
+        });
+        Object.defineProperty(window, 'cam', {
+          get: printCameraCoords,
+          configurable: true,
+        });
+        (window as any).getCam = printCameraCoords;
+      } catch {}
+
+      onKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'c' || e.key === 'C') {
+          printCameraCoords();
+        }
+      };
+      window.addEventListener('keydown', onKeyDown);
+    }
 
     window.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
     window.addEventListener('wheel', onWheel, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('keydown', onKeyDown);
 
-    // Zoom-proof Resizer
+    // Zoom-proof Resizer adaptativo para móviles, tablets y monitores
     const handleResize = () => {
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-      renderer.setSize(w, h, true);
-      composer.setSize(w, h);
-      bloomPass.resolution.set(w, h);
+      updateCameraProjection();
     };
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleResize);
@@ -1118,27 +1061,48 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
       // Zoom interpolado suave
       zoomScale += (targetZoomScale - zoomScale) * 0.08;
 
-      // Mouse Parallax & Scroll
-      smoothMX += (mouseNX - smoothMX) * 0.04;
-      smoothMY += (mouseNY - smoothMY) * 0.04;
-      const scrollOffset = scrollY * 0.015;
+      // Progreso de scroll de la página (0.0 al inicio, 1.0 al final de la página)
+      const maxScroll = Math.max(
+        document.documentElement.scrollHeight - window.innerHeight,
+        1000
+      );
+      const scrollFraction = THREE.MathUtils.clamp(Math.max(0, scrollY) / maxScroll, 0, 1);
+      // Curva suave para alejarse poco a poquito
+      const scrollProgress = Math.pow(scrollFraction, 0.85);
 
-      // Cámara orbital en torno a la Tierra mirando al Sol
+      // Posición alejada y centrada cuando se desliza hacia abajo (alinea la Tierra al centro)
+      const scrollCenteredCam = new THREE.Vector3(-38.0, -11.0, 72.0);
+      const scrollCenteredTarget = new THREE.Vector3(-38.0, -12.0, -40.0);
+
+      // Interpolación entre posición inicial y posición centrada
+      const activeBaseCam = new THREE.Vector3().lerpVectors(
+        baseCamPos,
+        scrollCenteredCam,
+        scrollProgress
+      );
+      const activeBaseTarget = new THREE.Vector3().lerpVectors(
+        baseTarget,
+        scrollCenteredTarget,
+        scrollProgress
+      );
+
+      // Cámara orbital en torno a la Tierra
       const earthCenter = earthGroup.position;
-      const relCam = new THREE.Vector3().subVectors(baseCamPos, earthCenter);
+      const relCam = new THREE.Vector3().subVectors(activeBaseCam, earthCenter);
 
       relCam.applyAxisAngle(new THREE.Vector3(0, 1, 0), orbitYaw);
       relCam.applyAxisAngle(new THREE.Vector3(1, 0, 0), orbitPitch);
       relCam.multiplyScalar(zoomScale);
 
       camera.position.copy(earthCenter).add(relCam);
-      camera.position.x += smoothMX * 2.5;
-      camera.position.y += smoothMY * 1.8 + scrollOffset * 0.2;
+      const parallaxFactor = 1 - scrollProgress * 0.45;
+      camera.position.x += smoothMX * (2.5 * parallaxFactor);
+      camera.position.y += smoothMY * (1.8 * parallaxFactor);
 
-      const lookTarget = new THREE.Vector3().copy(baseTarget);
+      const lookTarget = new THREE.Vector3().copy(activeBaseTarget);
       lookTarget.applyAxisAngle(new THREE.Vector3(0, 1, 0), orbitYaw * 0.6);
-      lookTarget.x += smoothMX * 4;
-      lookTarget.y += smoothMY * 3;
+      lookTarget.x += smoothMX * (4 * parallaxFactor);
+      lookTarget.y += smoothMY * (3 * parallaxFactor);
       currentLookTarget.copy(lookTarget);
       camera.lookAt(lookTarget);
 
@@ -1248,35 +1212,6 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
         }
       }
 
-      // Colisiones activas
-      for (let i = activeCollisions.length - 1; i >= 0; i--) {
-        const col = activeCollisions[i];
-        col.life += dt;
-        const progress = col.life / col.maxLife;
-
-        col.flash.material.opacity = Math.max(0, 1 - progress * 2.5);
-
-        const ringScale = 1 + progress * 22;
-        col.ring.scale.set(ringScale, ringScale, 1);
-        (col.ring.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.9 * (1 - progress));
-
-        const pArr = col.sparks.geometry.attributes.position.array as Float32Array;
-        for (let j = 0; j < col.vels.length / 3; j++) {
-          pArr[j * 3] += col.vels[j * 3] * dt * 25;
-          pArr[j * 3 + 1] += col.vels[j * 3 + 1] * dt * 25;
-          pArr[j * 3 + 2] += col.vels[j * 3 + 2] * dt * 25;
-        }
-        col.sparks.geometry.attributes.position.needsUpdate = true;
-        (col.sparks.material as THREE.PointsMaterial).opacity = Math.max(0, 1 - progress);
-
-        if (progress >= 1) {
-          scene.remove(col.group);
-          col.group.traverse((c) => {
-            if ((c as THREE.Mesh).geometry) (c as THREE.Mesh).geometry.dispose();
-          });
-          activeCollisions.splice(i, 1);
-        }
-      }
 
       // Renderizado con Bloom
       composer.render();
@@ -1292,13 +1227,13 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
       window.removeEventListener('pointerup', onPointerUp);
       window.removeEventListener('wheel', onWheel);
       window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('keydown', onKeyDown);
+      if (onKeyDown) window.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
       ro.disconnect();
 
       if (container.contains(toast)) container.removeChild(toast);
-      if (container.contains(camButton)) container.removeChild(camButton);
+      if (camButton && container.contains(camButton)) container.removeChild(camButton);
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
       try {
         delete (window as any).c;

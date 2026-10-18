@@ -94,7 +94,7 @@ export const CyberCursor: React.FC = () => {
         style={{
           left: `${pos.x}px`,
           top: `${pos.y}px`,
-          transform: `translate(-50%, -50%) scale(${clicking ? 1.4 : 1})`,
+          transform: `translate(-50%, -50%) scale(${clicking ? 0.92 : 1})`,
         }}
       >
         {/* Outer Rotating Crosshair Ring */}
@@ -112,11 +112,6 @@ export const CyberCursor: React.FC = () => {
         <div className="absolute left-6 top-2 font-mono text-[9px] text-[#00f0ff] whitespace-nowrap bg-[#050608]/90 px-1.5 py-0.5 border border-[#00f0ff]/40 tracking-wider">
           {`POS:[${Math.round(pos.x)}|${Math.round(pos.y)}]`}
         </div>
-
-        {/* Click Pulse Wave */}
-        {clicking && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full border-2 border-[#fcee0a] animate-ping opacity-75" />
-        )}
       </div>
     </div>
   );
