@@ -1,19 +1,22 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { soundManager } from '../utils/soundEffects';
 
 /* ================================================================
-   BACKGROUND 3D — Living Solar System & Deep Space Universe
+   BACKGROUND 3D — Cosmic Nebula & Living Solar Explorer
    ================================================================
-   • Central Sun: glowing core, pulsing solar corona & lens flare
-   • Planets: Earth (clouds & atmo), Moon, Saturn (rings), Mars, Neptune
-   • Celestial Auroras: shimmering undulating curtains of light
-   • Random space events: spacecraft, comets, falling meteors
-   • Full mouse & touch interaction:
-     - Tap/Click on empty space: Cosmic meteor collision & shockwave
-     - Tap/Click on any planet/sun: Electromagnetic shield triggers,
-       rotation burst, data pulse & sound
-     - Mouse drag: full 3D celestial rotation with inertia physics
+   • Custom 3D GLB Models:
+     - Earth (earth.glb) with live rotating animated cloud deck
+     - Central Sun (sun.glb) with live animated solar corona & flares
+   • Realistic Deep Space Cosmic Nebula Background (from reference):
+     - Deep Celestial Sky Dome (never flat black!)
+     - Volumetric Multi-layer Gas Clouds (Cyan O-III, Cobalt H-beta, Violet)
+     - Dark Interstellar Dust Absorption Lanes for authentic 3D contrast
+     - Radiant Stars with 4-Point Optical Diffraction Cross Flares
+     - Distant Spiral Galaxy tilted in the upper quadrant
+   • Orbiting Planets: Saturn (rings), Mars, Neptune, Moon
+   • Full mouse & touch interaction with inertia and HUD telemetry
    ================================================================ */
 
 export const Background3D = () => {
@@ -31,11 +34,11 @@ export const Background3D = () => {
     // ---- HUD Toast Banner inside DOM for Planet Interactions ----
     const toast = document.createElement('div');
     toast.className =
-      'fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-all duration-300 opacity-0 translate-y-3 font-mono text-xs px-4 py-2 border backdrop-blur-md';
-    toast.style.backgroundColor = 'rgba(5, 8, 14, 0.85)';
+      'fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-all duration-300 opacity-0 translate-y-3 font-mono text-xs px-4 py-2 border backdrop-blur-md rounded-xs';
+    toast.style.backgroundColor = 'rgba(4, 10, 26, 0.9)';
     toast.style.borderColor = '#00f0ff';
     toast.style.color = '#00f0ff';
-    toast.style.boxShadow = '0 0 20px rgba(0, 240, 255, 0.25)';
+    toast.style.boxShadow = '0 0 25px rgba(0, 240, 255, 0.35)';
     container.appendChild(toast);
 
     const showPlanetHUD = (name: string, telemetry: string, color = '#00f0ff') => {
@@ -49,18 +52,19 @@ export const Background3D = () => {
       (toast as any).timeoutId = setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translate(-50%, 12px)';
-      }, 3500);
+      }, 3800);
     };
 
     // ---- SCENE, CAMERA & RENDERER ----
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x010308, 0.001);
+    scene.background = new THREE.Color(0x030818); // Deep indigo, never dull black
+    scene.fog = new THREE.FogExp2(0x050e26, 0.00075);
 
     const camera = new THREE.PerspectiveCamera(
       55,
       window.innerWidth / window.innerHeight,
       0.1,
-      4000
+      60000
     );
     camera.position.set(0, 0, 110);
 
@@ -69,9 +73,9 @@ export const Background3D = () => {
       alpha: false,
       powerPreference: 'high-performance',
     });
-    renderer.setClearColor(0x010308, 1);
+    renderer.setClearColor(0x030818, 1);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMappingExposure = 1.45;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight, true);
 
@@ -86,7 +90,16 @@ export const Background3D = () => {
     canvas.style.zIndex = '0';
     container.appendChild(canvas);
 
-    // ---- PROCEDURAL TEXTURE GENERATORS ----
+    const cosmos = new THREE.Group();
+    scene.add(cosmos);
+
+    // GLTF Loader & Animation Mixers
+    const gltfLoader = new GLTFLoader();
+    const animationMixers: THREE.AnimationMixer[] = [];
+
+    // ========================================================
+    // PROCEDURAL TEXTURE GENERATORS
+    // ========================================================
     const makeGlowTexture = (color: string, size = 128) => {
       const c = document.createElement('canvas');
       c.width = size; c.height = size;
@@ -102,291 +115,373 @@ export const Background3D = () => {
       return new THREE.CanvasTexture(c);
     };
 
-    // Sun Surface Texture (Solar granulation and solar flares)
-    const makeSunTexture = () => {
+    // Wispy Volumetric Nebula Gas (Emissive Cloud)
+    const makeNebulaGasTexture = (tint1: string, tint2: string, tint3: string, size = 512) => {
+      const c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      const ctx = c.getContext('2d')!;
+      const g = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+      g.addColorStop(0, tint1);
+      g.addColorStop(0.35, tint2);
+      g.addColorStop(0.7, tint3);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+
+      for (let i = 0; i < 40; i++) {
+        const cx = (0.2 + Math.random() * 0.6) * size;
+        const cy = (0.2 + Math.random() * 0.6) * size;
+        const rx = (0.1 + Math.random() * 0.35) * size;
+        const ry = (0.05 + Math.random() * 0.2) * size;
+        const angle = Math.random() * Math.PI;
+
+        ctx.fillStyle = i % 2 === 0 ? tint1 : tint2;
+        ctx.globalAlpha = 0.22 + Math.random() * 0.28;
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, angle, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1.0;
+      return new THREE.CanvasTexture(c);
+    };
+
+    // Dark Dust Texture (Absorptive silhouettes for 3D depth)
+    const makeDarkDustTexture = (size = 512) => {
+      const c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      const ctx = c.getContext('2d')!;
+      ctx.clearRect(0, 0, size, size);
+
+      for (let i = 0; i < 30; i++) {
+        const cx = (0.25 + Math.random() * 0.5) * size;
+        const cy = (0.25 + Math.random() * 0.5) * size;
+        const rad = (0.12 + Math.random() * 0.28) * size;
+        const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rad);
+        g.addColorStop(0, 'rgba(2, 6, 16, 0.95)');
+        g.addColorStop(0.5, 'rgba(4, 10, 24, 0.7)');
+        g.addColorStop(0.85, 'rgba(6, 14, 30, 0.25)');
+        g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(cx, cy, rad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      return new THREE.CanvasTexture(c);
+    };
+
+    // Optical 4-Point Diffraction Cross Flare for Stars (Hubble/JWST style)
+    const makeCrossStarTexture = (color: string, size = 256) => {
+      const c = document.createElement('canvas');
+      c.width = size; c.height = size;
+      const ctx = c.getContext('2d')!;
+      const half = size / 2;
+
+      const g = ctx.createRadialGradient(half, half, 0, half, half, half * 0.8);
+      g.addColorStop(0, '#ffffff');
+      g.addColorStop(0.08, color);
+      g.addColorStop(0.35, `${color}44`);
+      g.addColorStop(0.7, `${color}11`);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(0, 0, size, size);
+
+      // Horizontal spike
+      const hGrad = ctx.createLinearGradient(0, half, size, half);
+      hGrad.addColorStop(0, 'rgba(255,255,255,0)');
+      hGrad.addColorStop(0.46, `${color}66`);
+      hGrad.addColorStop(0.5, '#ffffff');
+      hGrad.addColorStop(0.54, `${color}66`);
+      hGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = hGrad;
+      ctx.fillRect(0, half - 1.5, size, 3);
+
+      // Vertical spike
+      const vGrad = ctx.createLinearGradient(half, 0, half, size);
+      vGrad.addColorStop(0, 'rgba(255,255,255,0)');
+      vGrad.addColorStop(0.46, `${color}66`);
+      vGrad.addColorStop(0.5, '#ffffff');
+      vGrad.addColorStop(0.54, `${color}66`);
+      vGrad.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = vGrad;
+      ctx.fillRect(half - 1.5, 0, 3, size);
+
+      return new THREE.CanvasTexture(c);
+    };
+
+    // Planet textures for remaining solar bodies
+    const makeMarsTexture = () => {
       const c = document.createElement('canvas');
       c.width = 512; c.height = 256;
       const ctx = c.getContext('2d')!;
       const g = ctx.createLinearGradient(0, 0, 0, 256);
-      g.addColorStop(0, '#ff9900');
-      g.addColorStop(0.3, '#ffcc00');
-      g.addColorStop(0.5, '#fff1a8');
-      g.addColorStop(0.7, '#ffaa00');
-      g.addColorStop(1, '#ff6600');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 512, 256);
-
-      // Granulation spots
-      for (let i = 0; i < 70; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 256;
-        const r = 4 + Math.random() * 18;
-        ctx.fillStyle = 'rgba(255, 240, 180, 0.4)';
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      g.addColorStop(0, '#591a0c'); g.addColorStop(0.5, '#b83d18'); g.addColorStop(1, '#66220f');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 512, 256);
+      ctx.fillStyle = '#f0ebe6';
+      ctx.fillRect(0, 0, 512, 14); ctx.fillRect(0, 242, 512, 14);
       return new THREE.CanvasTexture(c);
     };
 
-    // Earth Texture: Oceans + Continents
-    const makeEarthTexture = () => {
-      const c = document.createElement('canvas');
-      c.width = 1024; c.height = 512;
-      const ctx = c.getContext('2d')!;
-      const g = ctx.createLinearGradient(0, 0, 0, 512);
-      g.addColorStop(0, '#0a2342');
-      g.addColorStop(0.5, '#0d3268');
-      g.addColorStop(1, '#081c36');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 1024, 512);
-
-      const seedNoise = (cx: number, cy: number, rx: number, ry: number, color: string) => {
-        ctx.fillStyle = color;
-        ctx.beginPath();
-        for (let a = 0; a < Math.PI * 2; a += 0.15) {
-          const rVar = 0.7 + Math.sin(a * 5) * 0.2 + Math.cos(a * 3) * 0.15;
-          const x = cx + Math.cos(a) * rx * rVar;
-          const y = cy + Math.sin(a) * ry * rVar;
-          if (a === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.fill();
-      };
-      seedNoise(280, 200, 110, 100, '#2d5a27');
-      seedNoise(290, 360, 90, 130, '#1f441e');
-      seedNoise(620, 190, 180, 90, '#3b6e22');
-      seedNoise(650, 340, 110, 120, '#8c7853');
-      seedNoise(750, 240, 120, 80, '#2e5318');
-      seedNoise(820, 390, 70, 50, '#9c6644');
-
-      ctx.fillStyle = '#f0f8ff';
-      ctx.fillRect(0, 0, 1024, 35);
-      ctx.fillRect(0, 477, 1024, 35);
-
-      const tex = new THREE.CanvasTexture(c);
-      tex.wrapS = THREE.RepeatWrapping;
-      return tex;
-    };
-
-    // Earth Clouds Texture
-    const makeEarthCloudsTexture = () => {
-      const c = document.createElement('canvas');
-      c.width = 1024; c.height = 512;
-      const ctx = c.getContext('2d')!;
-      ctx.clearRect(0, 0, 1024, 512);
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
-      for (let i = 0; i < 40; i++) {
-        const cx = Math.random() * 1024;
-        const cy = 60 + Math.random() * 380;
-        const rx = 40 + Math.random() * 120;
-        const ry = 15 + Math.random() * 40;
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx, ry, Math.random() * 0.3 - 0.15, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      const tex = new THREE.CanvasTexture(c);
-      tex.wrapS = THREE.RepeatWrapping;
-      return tex;
-    };
-
-    // Moon Texture
-    const makeMoonTexture = () => {
+    const makeGasGiantTexture = () => {
       const c = document.createElement('canvas');
       c.width = 512; c.height = 256;
       const ctx = c.getContext('2d')!;
-      ctx.fillStyle = '#8a939e';
-      ctx.fillRect(0, 0, 512, 256);
-      for (let i = 0; i < 60; i++) {
-        const x = Math.random() * 512;
-        const y = Math.random() * 256;
-        const r = 4 + Math.random() * 20;
-        ctx.fillStyle = '#656d78';
-        ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      const g = ctx.createLinearGradient(0, 0, 0, 256);
+      g.addColorStop(0, '#c79c5e'); g.addColorStop(0.25, '#e4c48f'); g.addColorStop(0.5, '#9d703b');
+      g.addColorStop(0.75, '#cba068'); g.addColorStop(1, '#81592c');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 512, 256);
       return new THREE.CanvasTexture(c);
     };
 
-    // Gas Giant & Saturn Rings
-    const makeGasGiantTexture = () => {
+    const makeIceGiantTexture = () => {
       const c = document.createElement('canvas');
-      c.width = 1024; c.height = 512;
+      c.width = 512; c.height = 256;
       const ctx = c.getContext('2d')!;
-      const g = ctx.createLinearGradient(0, 0, 0, 512);
-      g.addColorStop(0, '#3a2e1d');
-      g.addColorStop(0.2, '#c9a063');
-      g.addColorStop(0.4, '#e4c590');
-      g.addColorStop(0.6, '#f5deb3');
-      g.addColorStop(0.8, '#a07844');
-      g.addColorStop(1, '#2c2112');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 1024, 512);
-      for (let y = 0; y < 512; y += 4) {
-        ctx.fillStyle = `rgba(255, 255, 255, ${Math.sin(y * 0.1) * 0.08 + 0.04})`;
-        ctx.fillRect(0, y, 1024, 2);
+      const g = ctx.createLinearGradient(0, 0, 0, 256);
+      g.addColorStop(0, '#1a3c6b'); g.addColorStop(0.5, '#2e6bb0'); g.addColorStop(1, '#1b4075');
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 512, 256);
+      return new THREE.CanvasTexture(c);
+    };
+
+    const makeMoonTexture = () => {
+      const c = document.createElement('canvas');
+      c.width = 256; c.height = 128;
+      const ctx = c.getContext('2d')!;
+      ctx.fillStyle = '#8a9199'; ctx.fillRect(0, 0, 256, 128);
+      ctx.fillStyle = '#676d75';
+      for (let i = 0; i < 45; i++) {
+        ctx.beginPath();
+        ctx.arc(Math.random() * 256, Math.random() * 128, 1 + Math.random() * 6, 0, Math.PI * 2);
+        ctx.fill();
       }
       return new THREE.CanvasTexture(c);
     };
 
     const makeRingsTexture = () => {
       const c = document.createElement('canvas');
-      c.width = 512; c.height = 1;
+      c.width = 256; c.height = 1;
       const ctx = c.getContext('2d')!;
-      const g = ctx.createLinearGradient(0, 0, 512, 0);
+      const g = ctx.createLinearGradient(0, 0, 256, 0);
       g.addColorStop(0, 'rgba(0,0,0,0)');
-      g.addColorStop(0.1, 'rgba(210, 185, 140, 0.4)');
-      g.addColorStop(0.3, 'rgba(240, 220, 180, 0.85)');
-      g.addColorStop(0.48, 'rgba(10, 8, 5, 0.05)'); // Cassini
-      g.addColorStop(0.55, 'rgba(220, 195, 150, 0.7)');
-      g.addColorStop(0.85, 'rgba(160, 130, 90, 0.3)');
+      g.addColorStop(0.15, 'rgba(215, 185, 130, 0.85)');
+      g.addColorStop(0.48, 'rgba(15, 12, 8, 0.08)');
+      g.addColorStop(0.58, 'rgba(235, 205, 150, 0.9)');
+      g.addColorStop(0.9, 'rgba(190, 160, 110, 0.7)');
       g.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 512, 1);
+      ctx.fillStyle = g; ctx.fillRect(0, 0, 256, 1);
       return new THREE.CanvasTexture(c);
     };
-
-    // Mars Texture
-    const makeMarsTexture = () => {
-      const c = document.createElement('canvas');
-      c.width = 512; c.height = 256;
-      const ctx = c.getContext('2d')!;
-      const g = ctx.createLinearGradient(0, 0, 0, 256);
-      g.addColorStop(0, '#5a1e0b');
-      g.addColorStop(0.5, '#c1440e');
-      g.addColorStop(1, '#421406');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 512, 256);
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.ellipse(256, 10, 45, 10, 0, 0, Math.PI * 2);
-      ctx.fill();
-      return new THREE.CanvasTexture(c);
-    };
-
-    // Neptune / Cyan Ice Giant
-    const makeIceGiantTexture = () => {
-      const c = document.createElement('canvas');
-      c.width = 512; c.height = 256;
-      const ctx = c.getContext('2d')!;
-      const g = ctx.createLinearGradient(0, 0, 0, 256);
-      g.addColorStop(0, '#001a33');
-      g.addColorStop(0.5, '#0077b6');
-      g.addColorStop(1, '#001a33');
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, 512, 256);
-      return new THREE.CanvasTexture(c);
-    };
-
-    // ---- COSMOS GROUP ----
-    const cosmos = new THREE.Group();
-    scene.add(cosmos);
 
     // ========================================================
-    // 1. STARFIELD (9,000 spectral stars)
+    // 1. CELESTIAL SKY DOME (NEVER FLAT BLACK)
     // ========================================================
-    const STAR_COUNT = 9000;
+    const skyGeo = new THREE.SphereGeometry(30000, 32, 32);
+    const skyMat = new THREE.ShaderMaterial({
+      uniforms: {
+        topColor: { value: new THREE.Color(0x0a1638) },      // Deep cosmic cobalt
+        bottomColor: { value: new THREE.Color(0x020614) },   // Deep space indigo
+        nebulaGlow: { value: new THREE.Color(0x183060) },    // Ambient nebula radiance
+      },
+      vertexShader: `
+        varying vec3 vWorldPosition;
+        void main() {
+          vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+          vWorldPosition = worldPosition.xyz;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform vec3 topColor;
+        uniform vec3 bottomColor;
+        uniform vec3 nebulaGlow;
+        varying vec3 vWorldPosition;
+        void main() {
+          float h = normalize(vWorldPosition).y;
+          float x = normalize(vWorldPosition).x;
+          vec3 col = mix(bottomColor, topColor, max(h * 0.5 + 0.5, 0.0));
+          col += nebulaGlow * (0.28 + sin(x * 3.0) * 0.12);
+          gl_FragColor = vec4(col, 1.0);
+        }
+      `,
+      side: THREE.BackSide,
+      depthWrite: false,
+    });
+    cosmos.add(new THREE.Mesh(skyGeo, skyMat));
+
+    // ========================================================
+    // 2. VOLUMETRIC COSMIC NEBULA (REFERENCE MATCHING)
+    // ========================================================
+    const nebulaGroup = new THREE.Group();
+    cosmos.add(nebulaGroup);
+
+    const texCyanGas = makeNebulaGasTexture('rgba(0, 229, 255, 0.85)', 'rgba(24, 143, 255, 0.45)', 'rgba(10, 30, 80, 0.15)');
+    const texCobaltGas = makeNebulaGasTexture('rgba(25, 64, 255, 0.8)', 'rgba(50, 110, 255, 0.45)', 'rgba(15, 25, 70, 0.15)');
+    const texVioletGas = makeNebulaGasTexture('rgba(155, 48, 255, 0.8)', 'rgba(128, 40, 255, 0.45)', 'rgba(40, 10, 90, 0.15)');
+    const texDarkDust = makeDarkDustTexture();
+
+    const nebulaSprites: { sprite: THREE.Sprite; baseScale: number; phase: number }[] = [];
+    const nebulaLayers = [
+      { tex: texCyanGas, count: 24, scaleMin: 180, scaleMax: 420, blend: THREE.AdditiveBlending, opacity: 0.38 },
+      { tex: texCobaltGas, count: 24, scaleMin: 200, scaleMax: 500, blend: THREE.AdditiveBlending, opacity: 0.42 },
+      { tex: texVioletGas, count: 18, scaleMin: 160, scaleMax: 380, blend: THREE.AdditiveBlending, opacity: 0.32 },
+      { tex: texDarkDust, count: 20, scaleMin: 140, scaleMax: 340, blend: THREE.NormalBlending, opacity: 0.7 },
+    ];
+
+    nebulaLayers.forEach((layer) => {
+      for (let i = 0; i < layer.count; i++) {
+        const mat = new THREE.SpriteMaterial({
+          map: layer.tex,
+          transparent: true,
+          opacity: layer.opacity * (0.8 + Math.random() * 0.4),
+          blending: layer.blend,
+          depthWrite: false,
+        });
+
+        const sprite = new THREE.Sprite(mat);
+        const theta = Math.random() * Math.PI * 2;
+        const phi = (Math.random() - 0.5) * Math.PI * 0.85;
+        const dist = 320 + Math.pow(Math.random(), 0.7) * 900;
+
+        sprite.position.set(
+          dist * Math.cos(phi) * Math.cos(theta),
+          dist * Math.sin(phi) + (Math.random() - 0.5) * 120,
+          dist * Math.cos(phi) * Math.sin(theta)
+        );
+
+        const s = layer.scaleMin + Math.random() * (layer.scaleMax - layer.scaleMin);
+        sprite.scale.set(s, s * (0.75 + Math.random() * 0.5), 1);
+        nebulaGroup.add(sprite);
+
+        nebulaSprites.push({
+          sprite,
+          baseScale: s,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+    });
+
+    // ========================================================
+    // 3. RADIANT CROSS-SPIKE STARS & DEEP STARFIELD
+    // ========================================================
+    const crossStarGroup = new THREE.Group();
+    cosmos.add(crossStarGroup);
+    const crossSpikeColors = ['#00e5ff', '#ffffff', '#ffd060', '#99ccff', '#ff88bb'];
+
+    for (let i = 0; i < 35; i++) {
+      const color = crossSpikeColors[Math.floor(Math.random() * crossSpikeColors.length)];
+      const tex = makeCrossStarTexture(color);
+      const sprite = new THREE.Sprite(
+        new THREE.SpriteMaterial({
+          map: tex,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          opacity: 0.88,
+          depthWrite: false,
+        })
+      );
+      const dist = 280 + Math.pow(Math.random(), 0.6) * 1100;
+      const theta = Math.random() * Math.PI * 2;
+      const phi = (Math.random() - 0.5) * Math.PI * 0.9;
+      sprite.position.set(
+        dist * Math.cos(phi) * Math.cos(theta),
+        dist * Math.sin(phi),
+        dist * Math.cos(phi) * Math.sin(theta)
+      );
+      const baseSize = (i < 6 ? 24 : 12) + Math.random() * 10;
+      sprite.scale.set(baseSize, baseSize, 1);
+      crossStarGroup.add(sprite);
+    }
+
+    // 10,000 background stars
+    const STAR_COUNT = 10000;
     const starGeo = new THREE.BufferGeometry();
     const starPos = new Float32Array(STAR_COUNT * 3);
-    const starBase = new Float32Array(STAR_COUNT * 3);
     const starCol = new Float32Array(STAR_COUNT * 3);
-    const starPhase = new Float32Array(STAR_COUNT);
 
-    const spectralColors = [
-      new THREE.Color('#9bb0ff'), // Blue
-      new THREE.Color('#cad7ff'), // White
-      new THREE.Color('#fff4e8'), // Yellow
-      new THREE.Color('#ffd2a1'), // Orange
-      new THREE.Color('#00f0ff'), // Cyber Cyan
-      new THREE.Color('#fcee0a'), // Cyber Yellow
+    const spectralPalette = [
+      new THREE.Color('#ffffff'),
+      new THREE.Color('#99d6ff'),
+      new THREE.Color('#00f0ff'),
+      new THREE.Color('#ffdfa0'),
+      new THREE.Color('#ff99ee'),
     ];
 
     for (let i = 0; i < STAR_COUNT; i++) {
       const i3 = i * 3;
-      const rad = 50 + Math.pow(Math.random(), 0.6) * 480;
+      const r = 250 + Math.pow(Math.random(), 0.5) * 1800;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(Math.random() * 2 - 1);
 
-      const x = rad * Math.sin(phi) * Math.cos(theta);
-      const y = rad * Math.sin(phi) * Math.sin(theta);
-      const z = rad * Math.cos(phi);
+      starPos[i3] = r * Math.sin(phi) * Math.cos(theta);
+      starPos[i3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      starPos[i3 + 2] = r * Math.cos(phi);
 
-      starPos[i3] = x; starPos[i3 + 1] = y; starPos[i3 + 2] = z;
-      starBase[i3] = x; starBase[i3 + 1] = y; starBase[i3 + 2] = z;
-      starPhase[i] = Math.random() * Math.PI * 2;
-
-      const sc = spectralColors[Math.floor(Math.random() * spectralColors.length)];
+      const sc = spectralPalette[Math.floor(Math.random() * spectralPalette.length)];
       starCol[i3] = sc.r; starCol[i3 + 1] = sc.g; starCol[i3 + 2] = sc.b;
     }
 
     starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
     starGeo.setAttribute('color', new THREE.BufferAttribute(starCol, 3));
 
-    const starMat = new THREE.PointsMaterial({
-      size: 2.2,
-      sizeAttenuation: true,
-      vertexColors: true,
-      map: makeGlowTexture('#ffffff', 64),
-      transparent: true,
-      opacity: 0.95,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    });
-    const starPoints = new THREE.Points(starGeo, starMat);
-    cosmos.add(starPoints);
-
-    // ========================================================
-    // 2. COSMIC AURORA BOREALIS (Curtains of Light)
-    // ========================================================
-    const auroraGroup = new THREE.Group();
-    const AURORA_BANDS = 3;
-    const auroraPlanes: { mesh: THREE.Mesh; seed: number; speed: number }[] = [];
-
-    const auroraColors = [
-      new THREE.Color('#00ff88'), // Emerald Aurora
-      new THREE.Color('#00f0ff'), // Electric Cyan
-      new THREE.Color('#8a2be2'), // Violet
-    ];
-
-    for (let b = 0; b < AURORA_BANDS; b++) {
-      const planeGeo = new THREE.PlaneGeometry(160, 24, 48, 8);
-      const planeMat = new THREE.MeshBasicMaterial({
-        color: auroraColors[b],
+    const starPoints = new THREE.Points(
+      starGeo,
+      new THREE.PointsMaterial({
+        size: 2.2,
+        sizeAttenuation: true,
+        vertexColors: true,
+        map: makeGlowTexture('#ffffff', 64),
         transparent: true,
-        opacity: 0.08,
-        side: THREE.DoubleSide,
+        opacity: 0.95,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
-      });
-      const mesh = new THREE.Mesh(planeGeo, planeMat);
-      mesh.position.set(-20 + b * 20, 45 + b * 8, -120 - b * 20);
-      mesh.rotation.x = 0.35;
-      mesh.rotation.z = -0.15;
-      auroraGroup.add(mesh);
-      auroraPlanes.push({ mesh, seed: b * 1.5, speed: 0.6 + b * 0.3 });
+      })
+    );
+    cosmos.add(starPoints);
+
+    // Distant spiral galaxy (upper quadrant, matching reference)
+    const galaxyGroup = new THREE.Group();
+    galaxyGroup.position.set(-650, 320, -780);
+    galaxyGroup.rotation.set(0.85, -0.45, 0.6);
+    const gCount = 3500;
+    const gGeo = new THREE.BufferGeometry();
+    const gPos = new Float32Array(gCount * 3);
+    const gCol = new Float32Array(gCount * 3);
+    const cCore = new THREE.Color('#fff6dd');
+    const cArm = new THREE.Color('#66aaff');
+
+    for (let i = 0; i < gCount; i++) {
+      const i3 = i * 3;
+      const normR = Math.pow(Math.random(), 1.6);
+      const r = normR * 42;
+      const a = ((i % 2) * Math.PI) + r * 0.08;
+      const sp = (Math.random() - 0.5) * (r * 0.22 + 1.2);
+      gPos[i3] = Math.cos(a) * r + sp;
+      gPos[i3 + 1] = (Math.random() - 0.5) * (4 * (1 - normR) + 0.4);
+      gPos[i3 + 2] = Math.sin(a) * r + sp;
+
+      const mixed = cCore.clone().lerp(cArm, normR);
+      gCol[i3] = mixed.r; gCol[i3 + 1] = mixed.g; gCol[i3 + 2] = mixed.b;
     }
-    cosmos.add(auroraGroup);
+    gGeo.setAttribute('position', new THREE.BufferAttribute(gPos, 3));
+    gGeo.setAttribute('color', new THREE.BufferAttribute(gCol, 3));
+    galaxyGroup.add(new THREE.Points(gGeo, new THREE.PointsMaterial({
+      size: 2.5,
+      vertexColors: true,
+      map: makeGlowTexture('#ffffff', 32),
+      transparent: true,
+      opacity: 0.85,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    })));
+    cosmos.add(galaxyGroup);
 
     // ========================================================
-    // 3. THE CENTRAL SUN (Glowing Star + Corona + Flares)
+    // 4. THE CENTRAL SUN (GLB MODEL: sun.glb + LIVE ANIMATIONS)
     // ========================================================
     const sunGroup = new THREE.Group();
-    const sunGeo = new THREE.SphereGeometry(18, 48, 48);
-    const sunMat = new THREE.MeshBasicMaterial({
-      map: makeSunTexture(),
-      color: 0xffea77,
-    });
-    const sunMesh = new THREE.Mesh(sunGeo, sunMat);
-    (sunMesh as any).planetData = {
-      name: 'SOL CENTRAL',
-      telemetry: 'Enana Amarilla (G2V) // 5,778 K // Corona activa',
-      color: '#fcee0a',
-    };
-    sunGroup.add(sunMesh);
+    sunGroup.position.set(90, 45, -160);
+    cosmos.add(sunGroup);
 
-    // Solar Corona Sprite
+    // Pulsing Solar Corona Sprites
     const coronaMat = new THREE.SpriteMaterial({
       map: makeGlowTexture('#ff8800', 256),
       color: 0xffcc00,
@@ -398,7 +493,6 @@ export const Background3D = () => {
     corona.scale.set(65, 65, 1);
     sunGroup.add(corona);
 
-    // Secondary Outer Glow
     const coronaOuter = new THREE.Sprite(
       new THREE.SpriteMaterial({
         map: makeGlowTexture('#ff3300', 256),
@@ -410,19 +504,58 @@ export const Background3D = () => {
     coronaOuter.scale.set(110, 110, 1);
     sunGroup.add(coronaOuter);
 
-    sunGroup.position.set(90, 45, -160);
-    cosmos.add(sunGroup);
+    // Placeholder mesh while GLB loads
+    const sunGeo = new THREE.SphereGeometry(18, 48, 48);
+    const sunMat = new THREE.MeshBasicMaterial({ color: 0xffea77 });
+    let sunMesh: THREE.Object3D = new THREE.Mesh(sunGeo, sunMat);
+    const sunData = {
+      name: 'SOL CENTRAL (3D GLB)',
+      telemetry: 'Enana Amarilla (G2V) // Modelo GLB con núcleo de plasma activo',
+      color: '#fcee0a',
+    };
+    (sunMesh as any).planetData = sunData;
+    sunGroup.add(sunMesh);
 
-    // Sunlight illuminating the solar system
-    const sunLight = new THREE.DirectionalLight(0xfff4e6, 3.5);
+    // Load custom sun.glb
+    gltfLoader.load(
+      `${import.meta.env.BASE_URL}models/sun.glb`,
+      (gltf) => {
+        sunGroup.remove(sunMesh);
+        const model = gltf.scene;
+        // Bounding box of sun.glb is ~20 diameter (radius 10), scale by 1.8 so radius is ~18
+        model.scale.set(1.8, 1.8, 1.8);
+        model.traverse((child) => {
+          if ((child as any).isMesh) {
+            (child as any).planetData = sunData;
+          }
+        });
+        sunMesh = model;
+        sunGroup.add(model);
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          const mixer = new THREE.AnimationMixer(model);
+          const action = mixer.clipAction(gltf.animations[0]);
+          action.play();
+          animationMixers.push(mixer);
+        }
+      },
+      undefined,
+      (err) => console.warn('Loading sun.glb fallback:', err)
+    );
+
+    // Sunlight illuminating planets
+    const sunLight = new THREE.DirectionalLight(0xfff5ea, 3.8);
     sunLight.position.copy(sunGroup.position);
     scene.add(sunLight);
 
+    // Ambient light from the cosmic nebula
+    scene.add(new THREE.AmbientLight(0x284270, 2.8));
+
     // ========================================================
-    // 4. PLANETARY BODIES & INTERACTIVE SHIELDS
+    // 5. PLANETARY BODIES & GLB EARTH
     // ========================================================
     const interactivePlanets: {
-      mesh: THREE.Mesh;
+      mesh: THREE.Object3D;
       shield: THREE.Mesh;
       group: THREE.Group | THREE.Mesh;
       rotSpeed: number;
@@ -430,7 +563,6 @@ export const Background3D = () => {
       data: { name: string; telemetry: string; color: string };
     }[] = [];
 
-    // Helper to create an electromagnetic shield wireframe
     const makeShield = (radius: number, color = 0x00f0ff) => {
       const sGeo = new THREE.SphereGeometry(radius * 1.15, 24, 24);
       const sMat = new THREE.MeshBasicMaterial({
@@ -443,58 +575,69 @@ export const Background3D = () => {
       return new THREE.Mesh(sGeo, sMat);
     };
 
-    // --- A. EARTH ---
+    // --- A. EARTH (GLB 3D MODEL: earth.glb + LIVE CLOUD ANIMATION) ---
     const earthGroup = new THREE.Group();
-    const earthGeo = new THREE.SphereGeometry(11, 48, 48);
-    const earthMat = new THREE.MeshStandardMaterial({
-      map: makeEarthTexture(),
-      roughness: 0.65,
-      metalness: 0.1,
-    });
-    const earthMesh = new THREE.Mesh(earthGeo, earthMat);
-    earthGroup.add(earthMesh);
-
-    const earthClouds = new THREE.Mesh(
-      new THREE.SphereGeometry(11.25, 40, 40),
-      new THREE.MeshStandardMaterial({
-        map: makeEarthCloudsTexture(),
-        transparent: true,
-        opacity: 0.7,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-      })
-    );
-    earthGroup.add(earthClouds);
-
-    const earthShield = makeShield(11.5, 0x00f0ff);
-    earthGroup.add(earthShield);
-
     earthGroup.position.set(-38, -12, -40);
     earthGroup.rotation.z = 0.41;
     cosmos.add(earthGroup);
 
-    interactivePlanets.push({
+    const earthShield = makeShield(11.5, 0x00f0ff);
+    earthGroup.add(earthShield);
+
+    const earthGeo = new THREE.SphereGeometry(11, 48, 48);
+    const earthMat = new THREE.MeshStandardMaterial({ color: 0x1b4f8a, roughness: 0.65 });
+    let earthMesh: THREE.Object3D = new THREE.Mesh(earthGeo, earthMat);
+    earthGroup.add(earthMesh);
+
+    const earthEntry = {
       mesh: earthMesh,
       shield: earthShield,
       group: earthGroup,
       rotSpeed: 0.08,
       boost: 0,
       data: {
-        name: 'PLANETA TIERRA (TERRA)',
-        telemetry: 'Biosfera activa // Nubes y atmósfera en rotación // Escudo EM preparado',
+        name: 'PLANETA TIERRA (GLB 3D)',
+        telemetry: 'Biosfera activa // Modelo GLB con manto de nubes animado // Escudo EM preparado',
         color: '#00f0ff',
       },
-    });
+    };
+    (earthMesh as any).planetData = earthEntry.data;
+    interactivePlanets.push(earthEntry);
+
+    // Load custom earth.glb
+    gltfLoader.load(
+      `${import.meta.env.BASE_URL}models/earth.glb`,
+      (gltf) => {
+        earthGroup.remove(earthMesh);
+        const model = gltf.scene;
+        // Bounding box of earth.glb is ~20 diameter (radius 10), scale by 1.1 so radius is ~11
+        model.scale.set(1.1, 1.1, 1.1);
+        model.traverse((child) => {
+          if ((child as any).isMesh) {
+            (child as any).planetData = earthEntry.data;
+          }
+        });
+        earthMesh = model;
+        earthEntry.mesh = model;
+        earthGroup.add(model);
+
+        if (gltf.animations && gltf.animations.length > 0) {
+          const mixer = new THREE.AnimationMixer(model);
+          const action = mixer.clipAction(gltf.animations[0]);
+          action.play();
+          animationMixers.push(mixer);
+        }
+      },
+      undefined,
+      (err) => console.warn('Loading earth.glb fallback:', err)
+    );
 
     // --- B. MOON (Orbiting Earth) ---
     const moonGeo = new THREE.SphereGeometry(2.8, 24, 24);
-    const moonMesh = new THREE.Mesh(
-      moonGeo,
-      new THREE.MeshStandardMaterial({
-        map: makeMoonTexture(),
-        roughness: 0.9,
-      })
-    );
+    const moonMesh = new THREE.Mesh(moonGeo, new THREE.MeshStandardMaterial({
+      map: makeMoonTexture(),
+      roughness: 0.9,
+    }));
     const moonShield = makeShield(3, 0xbbccff);
     moonMesh.add(moonShield);
     cosmos.add(moonMesh);
@@ -507,7 +650,7 @@ export const Background3D = () => {
       boost: 0,
       data: {
         name: 'LA LUNA',
-        telemetry: 'Satelite natural // Mareas gravitacionales enlazadas a Terra',
+        telemetry: 'Satélite natural enlazado a la órbita de Terra',
         color: '#cad7ff',
       },
     });
@@ -516,14 +659,10 @@ export const Background3D = () => {
     const saturnGroup = new THREE.Group();
     const saturnMesh = new THREE.Mesh(
       new THREE.SphereGeometry(15, 48, 48),
-      new THREE.MeshStandardMaterial({
-        map: makeGasGiantTexture(),
-        roughness: 0.75,
-      })
+      new THREE.MeshStandardMaterial({ map: makeGasGiantTexture(), roughness: 0.75 })
     );
     saturnGroup.add(saturnMesh);
 
-    // Rings
     const ringGeo = new THREE.RingGeometry(20, 36, 96);
     const rPos = ringGeo.attributes.position;
     const rUV = ringGeo.attributes.uv;
@@ -545,7 +684,6 @@ export const Background3D = () => {
 
     const saturnShield = makeShield(16, 0xfcee0a);
     saturnGroup.add(saturnShield);
-
     saturnGroup.position.set(50, 18, -90);
     saturnGroup.rotation.z = -0.35;
     cosmos.add(saturnGroup);
@@ -558,7 +696,7 @@ export const Background3D = () => {
       boost: 0,
       data: {
         name: 'SATURNO (GIGANTE GASEOSO)',
-        telemetry: 'Sistema de anillos dobles // Atmósfera de hidrógeno y helio',
+        telemetry: 'Sistema masivo de anillos dobles // Atmósfera de hidrógeno y helio',
         color: '#fcee0a',
       },
     });
@@ -566,10 +704,7 @@ export const Background3D = () => {
     // --- D. MARS ---
     const marsMesh = new THREE.Mesh(
       new THREE.SphereGeometry(6.5, 32, 32),
-      new THREE.MeshStandardMaterial({
-        map: makeMarsTexture(),
-        roughness: 0.85,
-      })
+      new THREE.MeshStandardMaterial({ map: makeMarsTexture(), roughness: 0.85 })
     );
     const marsShield = makeShield(7, 0xff003c);
     marsMesh.add(marsShield);
@@ -585,7 +720,7 @@ export const Background3D = () => {
       boost: 0,
       data: {
         name: 'MARTE (PLANETA ROJO)',
-        telemetry: 'Casquetes polares // Valles secos y minerales de hierro',
+        telemetry: 'Casquetes polares // Valles secos y minerales de hierro oxidado',
         color: '#ff003c',
       },
     });
@@ -593,14 +728,11 @@ export const Background3D = () => {
     // --- E. NEPTUNE ---
     const neptuneMesh = new THREE.Mesh(
       new THREE.SphereGeometry(9, 32, 32),
-      new THREE.MeshStandardMaterial({
-        map: makeIceGiantTexture(),
-        roughness: 0.55,
-      })
+      new THREE.MeshStandardMaterial({ map: makeIceGiantTexture(), roughness: 0.55 })
     );
     const neptuneShield = makeShield(9.5, 0x00f0ff);
     neptuneMesh.add(neptuneShield);
-    neptuneMesh.position.set(75, -30, -170);
+    neptuneMesh.position.set(70, -32, -80);
     cosmos.add(neptuneMesh);
 
     interactivePlanets.push({
@@ -611,208 +743,40 @@ export const Background3D = () => {
       boost: 0,
       data: {
         name: 'NEPTUNO (GIGANTE DE HIELO)',
-        telemetry: 'Vientos supersónicos // Metano atmosférico azul profundo',
+        telemetry: 'Vientos supersónicos a 2,100 km/h // Manto de agua, amoníaco y metano',
         color: '#00f0ff',
       },
     });
 
-    // Ambient Space Light
-    scene.add(new THREE.AmbientLight(0x182238, 1.4));
-
     // ========================================================
-    // 5. RANDOM SPACE EVENTS (Naves, Meteoros, Cometas)
+    // 6. METEOR COLLISION RIPPLES & PARTICLES
     // ========================================================
-    interface SpaceEvent {
-      mesh: THREE.Object3D;
-      life: number;
-      maxLife: number;
-      update: (t: number, dt: number) => void;
-      done: () => boolean;
+    interface CollisionWave {
+      mesh: THREE.Mesh;
+      age: number;
+      maxAge: number;
     }
-    const activeEvents: SpaceEvent[] = [];
-    const MAX_EVENTS = 2;
-    let nextEventTimer = 2.5 + Math.random() * 4;
+    const activeCollisions: CollisionWave[] = [];
 
-    // Fast Meteor
-    const spawnMeteor = (): SpaceEvent => {
-      const group = new THREE.Group();
-      const head = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: makeGlowTexture('#ffaa22', 64),
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-        })
-      );
-      head.scale.set(4.5, 4.5, 1);
-      group.add(head);
-
-      const TRAIL_LEN = 25;
-      const tGeo = new THREE.BufferGeometry();
-      const tPos = new Float32Array(TRAIL_LEN * 3);
-      tGeo.setAttribute('position', new THREE.BufferAttribute(tPos, 3));
-      const trail = new THREE.Points(
-        tGeo,
-        new THREE.PointsMaterial({
-          size: 2.2,
-          map: makeGlowTexture('#ff4400', 64),
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-        })
-      );
-      group.add(trail);
-
-      const side = Math.random() > 0.5 ? 1 : -1;
-      group.position.set(side * 130, 45 + Math.random() * 40, -30);
-      const vel = new THREE.Vector3(-side * 4, -2, 0);
-      cosmos.add(group);
-
-      return {
-        mesh: group,
-        life: 0,
-        maxLife: 3.2,
-        update: (_t, dt) => {
-          group.position.add(vel.clone().multiplyScalar(dt * 30));
-          const arr = tGeo.attributes.position.array as Float32Array;
-          for (let i = TRAIL_LEN - 1; i > 0; i--) {
-            arr[i * 3] = arr[(i - 1) * 3];
-            arr[i * 3 + 1] = arr[(i - 1) * 3 + 1];
-            arr[i * 3 + 2] = arr[(i - 1) * 3 + 2];
-          }
-          arr[0] = 0; arr[1] = 0; arr[2] = 0;
-          tGeo.attributes.position.needsUpdate = true;
-        },
-        done: function () { return this.life >= this.maxLife; },
-      };
-    };
-
-    // Exploration Spacecraft with cyan ion engine
-    const spawnShip = (): SpaceEvent => {
-      const group = new THREE.Group();
-      const hull = new THREE.Mesh(
-        new THREE.ConeGeometry(0.8, 3.5, 4),
-        new THREE.MeshBasicMaterial({ color: 0x445566 })
-      );
-      hull.rotation.z = Math.PI / 2;
-      group.add(hull);
-
-      const engine = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: makeGlowTexture('#00f0ff', 64),
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-        })
-      );
-      engine.scale.set(5.5, 2.5, 1);
-      engine.position.set(-2.2, 0, 0);
-      group.add(engine);
-
-      const side = Math.random() > 0.5 ? 1 : -1;
-      group.position.set(side * 140, (Math.random() - 0.5) * 60, 20);
-      const vel = new THREE.Vector3(-side * 2.2, (Math.random() - 0.5) * 0.3, 0);
-      cosmos.add(group);
-
-      return {
-        mesh: group,
-        life: 0,
-        maxLife: 6.5,
-        update: (_t, dt) => {
-          group.position.add(vel.clone().multiplyScalar(dt * 25));
-          engine.material.opacity = 0.6 + Math.sin(performance.now() * 0.02) * 0.35;
-        },
-        done: function () { return this.life >= this.maxLife; },
-      };
-    };
-
-    const eventSpawners = [spawnMeteor, spawnMeteor, spawnShip];
-
-    // ========================================================
-    // 6. CLICK/TAP IMPACT & EXPLOSION COLLISION SYSTEM
-    // ========================================================
-    interface CollisionFx {
-      group: THREE.Group;
-      ring: THREE.Mesh;
-      flash: THREE.Sprite;
-      sparks: THREE.Points;
-      vels: Float32Array;
-      life: number;
-      maxLife: number;
-    }
-    const activeCollisions: CollisionFx[] = [];
-
-    const triggerCosmicCollision = (worldPoint: THREE.Vector3) => {
-      const group = new THREE.Group();
-      group.position.copy(worldPoint);
-
-      // Flash
-      const flash = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: makeGlowTexture('#fcee0a', 128),
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-        })
-      );
-      flash.scale.set(8, 8, 1);
-      group.add(flash);
-
-      // Expanding Shockwave Ring
-      const rGeo = new THREE.RingGeometry(0.5, 1.2, 32);
-      const rMat = new THREE.MeshBasicMaterial({
+    const triggerCosmicCollision = (point: THREE.Vector3) => {
+      soundManager.playClick();
+      const waveGeo = new THREE.RingGeometry(0.5, 2.5, 32);
+      const waveMat = new THREE.MeshBasicMaterial({
         color: 0x00f0ff,
         side: THREE.DoubleSide,
         transparent: true,
         opacity: 0.9,
         blending: THREE.AdditiveBlending,
       });
-      const ring = new THREE.Mesh(rGeo, rMat);
-      ring.lookAt(camera.position);
-      group.add(ring);
-
-      // Fragment sparks
-      const SPARK_COUNT = 60;
-      const sGeo = new THREE.BufferGeometry();
-      const sPos = new Float32Array(SPARK_COUNT * 3);
-      const vels = new Float32Array(SPARK_COUNT * 3);
-
-      for (let i = 0; i < SPARK_COUNT; i++) {
-        sPos[i * 3] = 0; sPos[i * 3 + 1] = 0; sPos[i * 3 + 2] = 0;
-        const theta = Math.random() * Math.PI * 2;
-        const phi = Math.acos(Math.random() * 2 - 1);
-        const speed = 0.8 + Math.random() * 2.2;
-        vels[i * 3] = Math.sin(phi) * Math.cos(theta) * speed;
-        vels[i * 3 + 1] = Math.sin(phi) * Math.sin(theta) * speed;
-        vels[i * 3 + 2] = Math.cos(phi) * speed;
-      }
-      sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
-
-      const sparks = new THREE.Points(
-        sGeo,
-        new THREE.PointsMaterial({
-          size: 3.5,
-          map: makeGlowTexture('#ffaa00', 64),
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false,
-        })
-      );
-      group.add(sparks);
-
-      scene.add(group);
-      soundManager.playWarp();
-
-      activeCollisions.push({
-        group,
-        ring,
-        flash,
-        sparks,
-        vels,
-        life: 0,
-        maxLife: 1.6,
-      });
+      const wave = new THREE.Mesh(waveGeo, waveMat);
+      wave.position.copy(point);
+      wave.lookAt(camera.position);
+      cosmos.add(wave);
+      activeCollisions.push({ mesh: wave, age: 0, maxAge: 0.85 });
     };
 
     // ========================================================
-    // 7. INTERACTION LISTENERS (Raycasting for Planets & Collisions)
+    // 7. INTERACTION CONTROLS
     // ========================================================
     const raycaster = new THREE.Raycaster();
     const mouseVec2 = new THREE.Vector2();
@@ -830,36 +794,40 @@ export const Background3D = () => {
       );
       raycaster.setFromCamera(mouseVec2, camera);
 
-      // Check for click on Sun first
-      const sunHits = raycaster.intersectObject(sunMesh);
+      // Check click on Sun
+      const sunHits = raycaster.intersectObject(sunGroup, true);
       if (sunHits.length > 0) {
-        showPlanetHUD(
-          (sunMesh as any).planetData.name,
-          (sunMesh as any).planetData.telemetry,
-          (sunMesh as any).planetData.color
-        );
+        showPlanetHUD(sunData.name, sunData.telemetry, sunData.color);
         corona.scale.multiplyScalar(1.3);
         triggerCosmicCollision(sunHits[0].point);
         return;
       }
 
-      // Check for click on Planets
-      const planetMeshes = interactivePlanets.map((p) => p.mesh);
-      const hits = raycaster.intersectObjects(planetMeshes);
+      // Check click on Planets
+      const planetTargets = interactivePlanets.map((p) => p.group);
+      const hits = raycaster.intersectObjects(planetTargets, true);
 
       if (hits.length > 0) {
-        const hitMesh = hits[0].object as THREE.Mesh;
-        const matched = interactivePlanets.find((p) => p.mesh === hitMesh);
+        const hitObj = hits[0].object;
+        const matched = interactivePlanets.find((p) => {
+          let cur: THREE.Object3D | null = hitObj;
+          while (cur) {
+            if (cur === p.group || cur === p.mesh) return true;
+            cur = cur.parent;
+          }
+          return false;
+        });
+
         if (matched) {
-          matched.boost = 0.45; // boost rotation speed
-          (matched.shield.material as THREE.MeshBasicMaterial).opacity = 0.95; // flash shield
+          matched.boost = 0.45;
+          (matched.shield.material as THREE.MeshBasicMaterial).opacity = 0.95;
           showPlanetHUD(matched.data.name, matched.data.telemetry, matched.data.color);
           triggerCosmicCollision(hits[0].point);
           return;
         }
       }
 
-      // Click on empty space: trigger cosmic meteor impact
+      // Click on space: cosmic ripple
       const hitWorld = new THREE.Vector3();
       raycaster.ray.at(55, hitWorld);
       triggerCosmicCollision(hitWorld);
@@ -886,20 +854,14 @@ export const Background3D = () => {
       }
     };
 
-    const onPointerUp = () => {
-      isDragging = false;
-    };
-
-    const onScroll = () => {
-      scrollY = window.scrollY;
-    };
+    const onPointerUp = () => { isDragging = false; };
+    const onScroll = () => { scrollY = window.scrollY; };
 
     window.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
     window.addEventListener('scroll', onScroll, { passive: true });
 
-    // Zoom-proof Resizer
     const handleResize = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
@@ -910,11 +872,9 @@ export const Background3D = () => {
     };
     window.addEventListener('resize', handleResize);
     window.addEventListener('orientationchange', handleResize);
-    const ro = new ResizeObserver(handleResize);
-    ro.observe(document.documentElement);
 
     // ========================================================
-    // 8. ANIMATION LOOP (60 FPS)
+    // 8. ANIMATION LOOP
     // ========================================================
     let frameId = 0;
     const t0 = performance.now();
@@ -926,6 +886,9 @@ export const Background3D = () => {
       const dt = Math.min((now - lastTime) * 0.001, 0.05);
       lastTime = now;
       const t = (now - t0) * 0.001;
+
+      // Update 3D GLB Animation Mixers (Earth clouds & Sun plasma)
+      animationMixers.forEach((mixer) => mixer.update(dt));
 
       // Cosmos auto-rotation & inertia
       cosmos.rotation.y += 0.0008 * dt * 60;
@@ -948,104 +911,50 @@ export const Background3D = () => {
       // Sun pulsing corona
       const sunPulse = 1 + Math.sin(t * 3) * 0.06;
       corona.scale.set(65 * sunPulse, 65 * sunPulse, 1);
-      sunMesh.rotation.y = t * 0.03;
+      coronaOuter.scale.set(110 * sunPulse, 110 * sunPulse, 1);
+      if (sunMesh) sunMesh.rotation.y += dt * 0.08;
 
-      // Earth & Cloud layer rotations
-      earthMesh.rotation.y += (0.08 + interactivePlanets[0].boost) * dt * 30;
-      earthClouds.rotation.y += 0.12 * dt * 30;
-      saturnMesh.rotation.y += (0.05 + interactivePlanets[2].boost) * dt * 30;
-      marsMesh.rotation.y += (0.07 + interactivePlanets[3].boost) * dt * 30;
-      neptuneMesh.rotation.y += (0.06 + interactivePlanets[4].boost) * dt * 30;
+      // Earth rotation & Moon orbit
+      if (earthMesh) earthMesh.rotation.y += dt * 0.05;
 
-      // Decay planet rotation boosts and shields
-      interactivePlanets.forEach((p) => {
-        if (p.boost > 0) p.boost = Math.max(0, p.boost - dt * 0.2);
-        const mat = p.shield.material as THREE.MeshBasicMaterial;
-        if (mat.opacity > 0.01) {
-          mat.opacity -= dt * 0.6;
-          p.shield.rotation.y += dt * 2;
-        }
-      });
-
-      // Moon Orbiting Earth
-      const moonOrbitRadius = 24;
+      const moonDist = 20;
+      const moonAngle = t * 0.35;
       moonMesh.position.set(
-        earthGroup.position.x + Math.cos(t * 0.4) * moonOrbitRadius,
-        earthGroup.position.y + Math.sin(t * 0.4) * 4,
-        earthGroup.position.z + Math.sin(t * 0.4) * moonOrbitRadius
+        earthGroup.position.x + Math.cos(moonAngle) * moonDist,
+        earthGroup.position.y + Math.sin(moonAngle) * 4,
+        earthGroup.position.z + Math.sin(moonAngle) * moonDist
       );
-      moonMesh.rotation.y = t * 0.1;
+      moonMesh.rotation.y += dt * 0.02;
 
-      // Shimmering Aurora Borealis Waves
-      auroraPlanes.forEach((ap) => {
-        const pos = ap.mesh.geometry.attributes.position;
-        for (let i = 0; i < pos.count; i++) {
-          const x = pos.getX(i);
-          const wave = Math.sin(t * ap.speed + x * 0.08 + ap.seed) * 2.5;
-          pos.setZ(i, wave);
+      // Other planets rotation & shield decay
+      interactivePlanets.forEach((p) => {
+        p.boost = Math.max(0, p.boost - dt * 0.25);
+        p.mesh.rotation.y += (p.rotSpeed + p.boost) * dt * 60 * 0.015;
+
+        const sMat = p.shield.material as THREE.MeshBasicMaterial;
+        if (sMat.opacity > 0) {
+          sMat.opacity = Math.max(0, sMat.opacity - dt * 1.2);
         }
-        pos.needsUpdate = true;
       });
 
-      // Twinkling Starfield
-      const sArr = starGeo.attributes.position.array as Float32Array;
-      for (let i = 0; i < STAR_COUNT; i++) {
-        const i3 = i * 3;
-        const twinkle = Math.sin(t * (1.3 + (i % 9) * 0.18) + starPhase[i]);
-        sArr[i3 + 1] = starBase[i3 + 1] + twinkle * 0.12;
-      }
-      starGeo.attributes.position.needsUpdate = true;
+      // Subtle pulse in cosmic nebula
+      nebulaSprites.forEach((item) => {
+        const pulse = 1 + Math.sin(t * 0.35 + item.phase) * 0.035;
+        item.sprite.scale.set(item.baseScale * pulse, item.baseScale * pulse * 0.85, 1);
+      });
 
-      // Random space events
-      nextEventTimer -= dt;
-      if (nextEventTimer <= 0 && activeEvents.length < MAX_EVENTS) {
-        const spawner = eventSpawners[Math.floor(Math.random() * eventSpawners.length)];
-        activeEvents.push(spawner());
-        nextEventTimer = 5 + Math.random() * 9;
-      }
-
-      for (let i = activeEvents.length - 1; i >= 0; i--) {
-        const ev = activeEvents[i];
-        ev.life += dt;
-        ev.update(t, dt);
-        if (ev.done()) {
-          cosmos.remove(ev.mesh);
-          ev.mesh.traverse((child) => {
-            if ((child as THREE.Mesh).geometry) (child as THREE.Mesh).geometry.dispose();
-          });
-          activeEvents.splice(i, 1);
-        }
-      }
-
-      // Active Collisions / Impacts Update
+      // Collision waves expansion & fade
       for (let i = activeCollisions.length - 1; i >= 0; i--) {
-        const col = activeCollisions[i];
-        col.life += dt;
-        const progress = col.life / col.maxLife;
-
-        // Flash fades quickly
-        col.flash.material.opacity = Math.max(0, 1 - progress * 2.5);
-
-        // Ring expands and fades
-        const ringScale = 1 + progress * 22;
-        col.ring.scale.set(ringScale, ringScale, 1);
-        (col.ring.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 0.9 * (1 - progress));
-
-        // Fragment sparks fly out
-        const pArr = col.sparks.geometry.attributes.position.array as Float32Array;
-        for (let j = 0; j < col.vels.length / 3; j++) {
-          pArr[j * 3] += col.vels[j * 3] * dt * 25;
-          pArr[j * 3 + 1] += col.vels[j * 3 + 1] * dt * 25;
-          pArr[j * 3 + 2] += col.vels[j * 3 + 2] * dt * 25;
-        }
-        col.sparks.geometry.attributes.position.needsUpdate = true;
-        (col.sparks.material as THREE.PointsMaterial).opacity = Math.max(0, 1 - progress);
-
-        if (progress >= 1) {
-          scene.remove(col.group);
-          col.group.traverse((c) => {
-            if ((c as THREE.Mesh).geometry) (c as THREE.Mesh).geometry.dispose();
-          });
+        const c = activeCollisions[i];
+        c.age += dt;
+        const progress = c.age / c.maxAge;
+        const s = 1 + progress * 14;
+        c.mesh.scale.set(s, s, 1);
+        (c.mesh.material as THREE.MeshBasicMaterial).opacity = (1 - progress) * 0.8;
+        if (c.age >= c.maxAge) {
+          cosmos.remove(c.mesh);
+          c.mesh.geometry.dispose();
+          (c.mesh.material as THREE.Material).dispose();
           activeCollisions.splice(i, 1);
         }
       }
@@ -1055,7 +964,6 @@ export const Background3D = () => {
 
     animate();
 
-    // ---- CLEANUP ----
     return () => {
       cancelAnimationFrame(frameId);
       window.removeEventListener('pointerdown', onPointerDown);
@@ -1064,7 +972,6 @@ export const Background3D = () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleResize);
-      ro.disconnect();
 
       if (container.contains(toast)) container.removeChild(toast);
       if (container.contains(renderer.domElement)) container.removeChild(renderer.domElement);
