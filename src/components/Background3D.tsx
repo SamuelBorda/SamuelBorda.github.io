@@ -336,7 +336,7 @@ export const Background3D = () => {
     coronaOuter.scale.set(110, 110, 1);
     sunGroup.add(coronaOuter);
 
-    sunGroup.position.set(90, 45, -160);
+    sunGroup.position.set(90, 45, -80);
     cosmos.add(sunGroup);
 
     // Luz del sol puntual
@@ -850,8 +850,11 @@ export const Background3D = () => {
     // Encuadre idéntico a la captura: Tierra en primer plano a la izquierda, Sol en el horizonte derecho
   //  const baseCamPos = new THREE.Vector3(-36.5, -16.0, -17.5);
    // const baseTarget = new THREE.Vector3(65, 28, -135);
-const baseCamPos = new THREE.Vector3(-30.8, -11.3, -24.1);
-const baseTarget = new THREE.Vector3(34.8, 28.2, -145.8);
+//const baseCamPos = new THREE.Vector3(-30.8, -11.3, -24.1);
+//const baseTarget = new THREE.Vector3(34.8, 28.2, -145.8);
+
+const baseCamPos = new THREE.Vector3(-35.1, -13.7, -22.9);
+const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
     let orbitYaw = 0;
     let orbitPitch = 0;
     let dragVelYaw = 0;
@@ -1161,10 +1164,10 @@ const baseTarget = new THREE.Vector3(34.8, 28.2, -145.8);
 
       // --- ÓRBITA DE LA LUNA (moon.glb: radio 16.5 para efecto flyby cinematográfico cercano) ---
       const moonOrbitRadius = 16.5;
-      const moonAngle = t * 0.32;
+      const moonAngle = t * 0.22;
       moonGroup.position.set(
         earthGroup.position.x + Math.cos(moonAngle) * moonOrbitRadius,
-        earthGroup.position.y + Math.sin(moonAngle) * 3.5,
+        earthGroup.position.y + Math.sin(moonAngle) * -1,
         earthGroup.position.z + Math.sin(moonAngle) * moonOrbitRadius
       );
       if (moonModel) {
