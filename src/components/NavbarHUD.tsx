@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Volume2, VolumeX, Terminal, Tv, Menu, X, Cpu } from 'lucide-react';
+import React, { useState } from 'react';
+import { Volume2, VolumeX, Terminal, Tv, Menu, X, ArrowUpRight } from 'lucide-react';
 import { GithubIcon } from './BrandIcons';
 import { soundManager } from '../utils/soundEffects';
 import { userProfile } from '../data/profile';
@@ -33,79 +33,66 @@ export const NavbarHUD: React.FC<NavbarHUDProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full backdrop-blur-xl bg-[#050608]/85 border-b border-cyan-500/25 px-4 lg:px-8 py-3 transition-all duration-300">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Brand / Cyberpunk Telemetry */}
-        <div className="flex items-center gap-3">
-          <div
-            className="relative flex items-center justify-center w-10 h-10 bg-[#050608] border-2 border-[#fcee0a] shadow-inner group cursor-pointer clip-cyber-sm"
-            onClick={() => soundManager.playSuccess()}
-            title="Cyberdeck Core"
-          >
-            <Cpu className="w-5 h-5 text-[#fcee0a] group-hover:rotate-45 transition-transform duration-300" />
-            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+    <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[94%] max-w-5xl transition-all duration-300">
+      <div className="relative flex items-center justify-between px-4 sm:px-6 py-2.5 rounded-full backdrop-blur-2xl bg-[#07090e]/80 border border-white/10 shadow-[0_16px_40px_rgba(0,0,0,0.7)]">
+        {/* Left: Brand Identity / Monogram */}
+        <a
+          href="#"
+          onClick={() => soundManager.playSuccess()}
+          className="flex items-center gap-3 group cursor-pointer"
+        >
+          <div className="relative w-8 h-8 rounded-full bg-gradient-to-tr from-[#fcee0a] via-[#00f0ff] to-[#ff003c] p-[1.5px] transition-transform duration-300 group-hover:scale-105">
+            <div className="w-full h-full rounded-full bg-[#07090e] flex items-center justify-center font-mono text-xs font-black text-white">
+              SB
+            </div>
+            <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#00f0ff] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#00f0ff]"></span>
             </span>
           </div>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-black tracking-widest text-[#fcee0a] font-mono glow-yellow">
-                {userProfile.handle}
-              </span>
-              <span className="px-1.5 py-0.5 text-[9px] font-mono font-bold bg-cyan-950/60 text-[#00f0ff] border border-[#00f0ff]/40 rounded-sm">
-                {userProfile.clearance}
-              </span>
-            </div>
-            <div className="text-[11px] text-slate-400 flex items-center gap-1.5 font-mono">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>SYS: ONLINE</span>
-              <span className="text-slate-600">//</span>
-              <span className="text-cyan-400">LATENCY: 12ms</span>
-            </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-bold tracking-tight text-white font-mono group-hover:text-[#fcee0a] transition-colors">
+              Samuel Borda
+            </span>
+            <span className="text-[10px] text-zinc-400 font-mono -mt-0.5">
+              Ingeniero en Sistemas
+            </span>
           </div>
-        </div>
+        </a>
 
-        {/* Desktop Nav Links */}
-        <nav className="hidden md:flex items-center gap-6 font-mono text-xs uppercase tracking-wider text-slate-300">
+        {/* Center: Desktop Navigation Links */}
+        <nav className="hidden md:flex items-center gap-1 bg-white/[0.03] border border-white/[0.06] rounded-full p-1 font-mono text-xs text-zinc-300">
           <a
             href="#projects"
             onClick={handleNavClick}
             onMouseEnter={() => soundManager.playHover()}
-            className="hover:text-[#00f0ff] transition-colors flex items-center gap-1.5 py-1 px-2.5 rounded-sm hover:bg-cyan-950/40 border border-transparent hover:border-[#00f0ff]/40"
+            className="px-4 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all"
           >
-            <span className="text-[#fcee0a]">01 //</span> Proyectos
+            Proyectos
           </a>
           <a
             href="#skills"
             onClick={handleNavClick}
             onMouseEnter={() => soundManager.playHover()}
-            className="hover:text-[#00f0ff] transition-colors flex items-center gap-1.5 py-1 px-2.5 rounded-sm hover:bg-cyan-950/40 border border-transparent hover:border-[#00f0ff]/40"
+            className="px-4 py-1.5 rounded-full hover:text-white hover:bg-white/[0.08] transition-all"
           >
-            <span className="text-[#fcee0a]">02 //</span> Tech Stack
-          </a>
-          <a
-            href="#about"
-            onClick={handleNavClick}
-            onMouseEnter={() => soundManager.playHover()}
-            className="hover:text-[#00f0ff] transition-colors flex items-center gap-1.5 py-1 px-2.5 rounded-sm hover:bg-cyan-950/40 border border-transparent hover:border-[#00f0ff]/40"
-          >
-            <span className="text-[#fcee0a]">03 //</span> Telemetría
+            Stack & Habilidades
           </a>
           <a
             href="#contact"
             onClick={handleNavClick}
             onMouseEnter={() => soundManager.playHover()}
-            className="hover:text-[#00f0ff] transition-colors flex items-center gap-1.5 py-1 px-2.5 rounded-sm hover:bg-cyan-950/40 border border-transparent hover:border-[#00f0ff]/40"
+            className="px-4 py-1.5 rounded-full hover:text-[#fcee0a] hover:bg-white/[0.08] transition-all flex items-center gap-1"
           >
-            <span className="text-[#fcee0a]">04 //</span> Conexión
+            <span>Contacto</span>
+            <ArrowUpRight className="w-3 h-3 text-[#fcee0a]" />
           </a>
         </nav>
 
-        {/* Action Controls (Audio, CRT, Terminal, GitHub) */}
+        {/* Right: Controls & Actions */}
         <div className="flex items-center gap-2">
-          {/* Terminal button */}
+          {/* CLI Terminal Pill */}
           <button
             onClick={() => {
               soundManager.playClick();
@@ -113,10 +100,10 @@ export const NavbarHUD: React.FC<NavbarHUDProps> = ({
             }}
             onMouseEnter={() => soundManager.playHover()}
             title="Abrir Terminal CLI"
-            className="p-2 rounded-sm bg-slate-900/90 border border-slate-700/60 hover:border-[#00f0ff] text-slate-300 hover:text-[#00f0ff] transition-all flex items-center gap-1.5 text-xs font-mono"
+            className="px-3 py-1.5 rounded-full bg-white/[0.04] hover:bg-[#00f0ff]/10 border border-white/10 hover:border-[#00f0ff]/50 text-zinc-200 hover:text-[#00f0ff] transition-all flex items-center gap-1.5 text-xs font-mono font-semibold active:scale-95 cursor-pointer"
           >
-            <Terminal className="w-4 h-4 text-[#00f0ff]" />
-            <span className="hidden sm:inline font-bold">CLI</span>
+            <Terminal className="w-3.5 h-3.5 text-[#00f0ff]" />
+            <span className="hidden sm:inline">CLI</span>
           </button>
 
           {/* CRT Scanline Toggle */}
@@ -126,86 +113,79 @@ export const NavbarHUD: React.FC<NavbarHUDProps> = ({
               onToggleScanlines();
             }}
             onMouseEnter={() => soundManager.playHover()}
-            title={scanlinesActive ? 'Desactivar Scanlines' : 'Activar Scanlines'}
-            className={`p-2 rounded-sm border transition-all text-xs ${
+            title={scanlinesActive ? 'Desactivar Scanlines' : 'Activar Scanlines Retro'}
+            className={`p-2 rounded-full border transition-all text-xs active:scale-95 cursor-pointer ${
               scanlinesActive
                 ? 'bg-[#ff003c]/20 border-[#ff003c] text-[#ff003c]'
-                : 'bg-slate-900/90 border-slate-700/60 text-slate-400 hover:text-slate-200'
+                : 'bg-white/[0.03] border-white/10 text-zinc-400 hover:text-white hover:bg-white/[0.08]'
             }`}
           >
-            <Tv className="w-4 h-4" />
+            <Tv className="w-3.5 h-3.5" />
           </button>
 
-          {/* Sound Toggle */}
+          {/* Audio Toggle */}
           <button
             onClick={toggleSound}
             onMouseEnter={() => soundManager.playHover()}
-            title={soundOn ? 'Silenciar audio' : 'Activar audio'}
-            className={`p-2 rounded-sm border transition-all ${
+            title={soundOn ? 'Silenciar Efectos de Audio' : 'Activar Audio'}
+            className={`p-2 rounded-full border transition-all active:scale-95 cursor-pointer ${
               soundOn
-                ? 'bg-cyan-950/60 border-[#00f0ff]/60 text-[#00f0ff]'
-                : 'bg-slate-900/90 border-slate-700/60 text-slate-500'
+                ? 'bg-[#00f0ff]/10 border-[#00f0ff]/40 text-[#00f0ff]'
+                : 'bg-white/[0.03] border-white/10 text-zinc-500 hover:text-zinc-300'
             }`}
           >
-            {soundOn ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+            {soundOn ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
           </button>
 
-          {/* GitHub direct link */}
+          {/* GitHub Direct Link */}
           <a
             href={userProfile.github}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => soundManager.playClick()}
             onMouseEnter={() => soundManager.playHover()}
-            title="Ver GitHub"
-            className="p-2 rounded-sm bg-slate-900/90 border border-slate-700/60 hover:border-[#fcee0a] text-slate-300 hover:text-[#fcee0a] transition-all"
+            title="Ver GitHub Oficial"
+            className="p-2 rounded-full bg-white/[0.03] border border-white/10 hover:border-[#fcee0a] text-zinc-300 hover:text-[#fcee0a] hover:bg-white/[0.08] transition-all active:scale-95"
           >
-            <GithubIcon className="w-4 h-4" />
+            <GithubIcon className="w-3.5 h-3.5" />
           </a>
 
-          {/* Mobile menu trigger */}
+          {/* Mobile Menu Button */}
           <button
             onClick={() => {
               soundManager.playClick();
               setMobileMenuOpen(!mobileMenuOpen);
             }}
-            className="md:hidden p-2 rounded-sm bg-slate-900 border border-slate-700 text-slate-300"
+            className="md:hidden p-2 rounded-full bg-white/[0.03] border border-white/10 text-zinc-300 active:scale-95"
           >
             {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile Drawer Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden mt-3 pt-3 border-t border-slate-800 flex flex-col gap-2 font-mono text-xs">
+        <div className="md:hidden mt-2 p-3 rounded-2xl backdrop-blur-2xl bg-[#07090e]/95 border border-white/10 shadow-2xl flex flex-col gap-1 font-mono text-xs">
           <a
             href="#projects"
             onClick={handleNavClick}
-            className="py-2 px-3 rounded hover:bg-cyan-950 text-slate-200 hover:text-[#00f0ff]"
+            className="py-2.5 px-4 rounded-xl hover:bg-white/[0.08] text-zinc-200 hover:text-[#00f0ff] transition-colors"
           >
             01 // Proyectos
           </a>
           <a
             href="#skills"
             onClick={handleNavClick}
-            className="py-2 px-3 rounded hover:bg-cyan-950 text-slate-200 hover:text-[#00f0ff]"
+            className="py-2.5 px-4 rounded-xl hover:bg-white/[0.08] text-zinc-200 hover:text-[#00f0ff] transition-colors"
           >
-            02 // Tech Stack
-          </a>
-          <a
-            href="#about"
-            onClick={handleNavClick}
-            className="py-2 px-3 rounded hover:bg-cyan-950 text-slate-200 hover:text-[#00f0ff]"
-          >
-            03 // Telemetría
+            02 // Stack & Habilidades
           </a>
           <a
             href="#contact"
             onClick={handleNavClick}
-            className="py-2 px-3 rounded hover:bg-cyan-950 text-slate-200 hover:text-[#00f0ff]"
+            className="py-2.5 px-4 rounded-xl hover:bg-white/[0.08] text-zinc-200 hover:text-[#fcee0a] transition-colors"
           >
-            04 // Conexión
+            03 // Contacto
           </a>
         </div>
       )}

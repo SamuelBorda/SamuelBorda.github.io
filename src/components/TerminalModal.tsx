@@ -25,8 +25,8 @@ export const TerminalModal: React.FC<TerminalModalProps> = ({ isOpen, onClose })
     {
       id: 1,
       type: 'system',
-      text: `CYBERDECK NETRUNNER OS V4.9 // KERNEL ONLINE
-SESIÓN AUTORIZADA: ${userProfile.handle} [MID FULLSTACK // 5 AÑOS EXP]
+      text: `TERMINAL CLI // INGENIERÍA DE SISTEMAS & FULLSTACK
+SESIÓN AUTORIZADA: ${userProfile.name} [BOLIVIA]
 Escribe "help" para ver los comandos operativos con ejecución en tiempo real.`,
     },
   ]);
@@ -243,11 +243,27 @@ Repositorio     : ${insProj.githubUrl}`,
           type: 'output',
           text: `IDENTIDAD // ${userProfile.name}
 --------------------------------------------------
-Rol         : ${userProfile.role} (5 años de trayectoria)
+Profesión   : ${userProfile.title}
+Rol         : ${userProfile.role}
 Ubicación   : ${userProfile.location}
-Especialidad: Ecosistema PHP & Laravel (Core), APIs REST, bases de datos y frontend reactivo (Next.js/React/Angular).
+Contacto    : ${userProfile.email} | Tel: ${userProfile.phone}
+Especialidad: Laravel, PHP 8, WebSockets en tiempo real, APIs RESTful, Next.js, React y bases de datos relacionales.
 GitHub      : ${userProfile.github}
 Bio         : ${userProfile.bio}`,
+        });
+        break;
+
+      case 'exp':
+      case 'experience':
+        const expList = userProfile.experiences
+          .map(
+            (e) => `  • ${e.company} [${e.period}]\n    ${e.role}\n    ${e.description}`
+          )
+          .join('\n\n');
+        newLogs.push({
+          id: Date.now() + 1,
+          type: 'output',
+          text: `HISTORIAL DE TRAYECTORIA OPERACIONAL:\n${expList}`,
         });
         break;
 

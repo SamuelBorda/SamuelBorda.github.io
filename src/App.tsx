@@ -9,13 +9,19 @@ import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { TerminalModal } from './components/TerminalModal';
 
+const SectionDivider: React.FC = () => (
+  <div className="max-w-5xl mx-auto px-4 my-4 opacity-50">
+    <div className="h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+  </div>
+);
+
 export function App() {
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [scanlinesActive, setScanlinesActive] = useState(false);
 
   return (
     <div className="relative min-h-screen text-slate-100 selection:bg-[#fcee0a] selection:text-slate-950">
-      {/* Three.js Procedural 3D Galaxy Canvas Background */}
+      {/* Three.js Procedural 3D Galaxy Canvas Background (kept intact) */}
       <Background3D />
 
       {/* Interactive Cyberpunk Cursor Tracker & Trail */}
@@ -36,8 +42,11 @@ export function App() {
 
         <main className="flex-1">
           <HeroSection />
+          <SectionDivider />
           <ProjectsSection />
+          <SectionDivider />
           <SkillsInventory />
+          <SectionDivider />
           <ContactSection />
         </main>
 

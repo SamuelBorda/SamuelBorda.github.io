@@ -31,15 +31,28 @@ export interface SkillCategory {
   }[];
 }
 
+export interface WorkExperience {
+  company: string;
+  role: string;
+  period: string;
+  description: string;
+  tags: string[];
+}
+
 export interface UserProfile {
   name: string;
   handle: string;
   role: string;
+  title: string;
+  education: string;
   clearance: string;
   location: string;
   bio: string;
   github: string;
   linkedin: string;
   email: string;
+  phone: string;
   availableForHire: boolean;
+  experiences: WorkExperience[];
 }
+

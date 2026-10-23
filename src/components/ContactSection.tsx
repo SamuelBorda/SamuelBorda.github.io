@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Send, Mail, CheckCircle2, MessageSquare } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Send, Mail, CheckCircle2, MessageSquare, MapPin, MessageCircle, ArrowUpRight } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from './BrandIcons';
 import { soundManager } from '../utils/soundEffects';
 import { userProfile } from '../data/profile';
@@ -22,98 +23,140 @@ export const ContactSection: React.FC = () => {
     });
 
     setSent(true);
-    const subject = encodeURIComponent(`[Portafolio Dev] Contacto de ${formData.name}`);
+    const subject = encodeURIComponent(`[Contacto Portafolio] Propuesta de ${formData.name}`);
     const body = encodeURIComponent(`${formData.message}\n\nContacto: ${formData.email}`);
     window.location.href = `mailto:${userProfile.email}?subject=${subject}&body=${body}`;
   };
 
   return (
-    <section id="contact" className="py-24 px-4 max-w-7xl mx-auto scroll-mt-20">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-        {/* Left Column */}
-        <div className="lg:col-span-5">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#0a0c12] border border-[#fcee0a]/50 text-[#fcee0a] text-xs font-mono mb-4">
-            <span className="w-2 h-2 rounded-full bg-[#fcee0a] animate-pulse"></span>
-            <span>TRANSMISIÓN // CANAL DIRECTO</span>
+    <section id="contact" className="py-24 px-4 max-w-7xl mx-auto scroll-mt-24">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+        {/* Left Column: Direct Info & Quick Channels */}
+        <motion.div
+          initial={{ opacity: 0, x: -24 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="lg:col-span-5"
+        >
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-[#00f0ff] text-xs font-mono mb-4 backdrop-blur-xl">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span>03 // Conexión Directa</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-black text-white font-mono tracking-tight mb-4">
-            Iniciar <br />
-            <span className="text-[#00f0ff] glow-cyan">Conexión</span>
+          <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight mb-4">
+            ¿Tienes un proyecto <br />
+            <span className="text-[#fcee0a]">en mente?</span>
           </h2>
 
-          <p className="text-slate-400 text-sm leading-relaxed mb-8 font-light">
-            Disponible para desarrollo de sistemas, proyectos fullstack en Laravel, Next.js, Node.js y colaboraciones de alto calibre. Establece contacto a través del dataterm.
+          <p className="text-zinc-400 text-sm sm:text-base leading-relaxed mb-8 font-light">
+            Disponible para desarrollo de software web fullstack, APIs de backend en Laravel y Node.js, aplicaciones en tiempo real e integraciones escalables. Escríbeme directamente por WhatsApp o correo.
           </p>
 
-          {/* Social Links */}
-          <div className="space-y-3 font-mono text-xs">
+          {/* Contact Direct Cards */}
+          <div className="space-y-2.5 font-mono text-xs">
+            {/* Email */}
             <a
               href={`mailto:${userProfile.email}`}
               onClick={() => soundManager.playClick()}
-              className="p-3.5 bg-[#0a0c12]/90 border border-slate-800 hover:border-[#fcee0a] flex items-center gap-3 text-slate-300 hover:text-white transition-all group"
+              className="p-4 rounded-2xl bg-[#080914]/75 border border-white/10 hover:border-[#fcee0a]/50 flex items-center justify-between text-zinc-300 hover:text-white transition-all group backdrop-blur-xl"
             >
-              <div className="p-2 bg-yellow-950/40 text-[#fcee0a] group-hover:scale-110 transition-transform">
-                <Mail className="w-4 h-4" />
+              <div className="flex items-center gap-3.5 overflow-hidden">
+                <div className="p-2.5 rounded-xl bg-yellow-400/10 text-[#fcee0a] group-hover:scale-105 transition-transform">
+                  <Mail className="w-4 h-4" />
+                </div>
+                <div className="overflow-hidden">
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Correo Electrónico</div>
+                  <div className="text-xs font-semibold text-white truncate">{userProfile.email}</div>
+                </div>
               </div>
-              <div>
-                <div className="text-[10px] text-slate-500 uppercase">Canal de Correo</div>
-                <div className="text-xs font-semibold">{userProfile.email}</div>
-              </div>
+              <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-[#fcee0a] transition-colors" />
             </a>
 
+            {/* WhatsApp */}
             <a
-              href={userProfile.github}
+              href="https://wa.me/59176401404"
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => soundManager.playClick()}
-              className="p-3.5 bg-[#0a0c12]/90 border border-slate-800 hover:border-[#00f0ff] flex items-center gap-3 text-slate-300 hover:text-white transition-all group"
+              className="p-4 rounded-2xl bg-[#080914]/75 border border-white/10 hover:border-emerald-400/50 flex items-center justify-between text-zinc-300 hover:text-white transition-all group backdrop-blur-xl"
             >
-              <div className="p-2 bg-cyan-950/40 text-[#00f0ff] group-hover:scale-110 transition-transform">
-                <GithubIcon className="w-4 h-4" />
+              <div className="flex items-center gap-3.5">
+                <div className="p-2.5 rounded-xl bg-emerald-400/10 text-emerald-400 group-hover:scale-105 transition-transform">
+                  <MessageCircle className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wider">WhatsApp & Celular</div>
+                  <div className="text-xs font-semibold text-white">+591 76401404 / +591 72749686</div>
+                </div>
               </div>
-              <div>
-                <div className="text-[10px] text-slate-500 uppercase">Perfil de GitHub</div>
-                <div className="text-xs font-semibold">{userProfile.github}</div>
-              </div>
+              <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
             </a>
 
-            <a
-              href={userProfile.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => soundManager.playClick()}
-              className="p-3.5 bg-[#0a0c12]/90 border border-slate-800 hover:border-[#ff003c] flex items-center gap-3 text-slate-300 hover:text-white transition-all group"
-            >
-              <div className="p-2 bg-rose-950/40 text-[#ff003c] group-hover:scale-110 transition-transform">
-                <LinkedinIcon className="w-4 h-4" />
+            {/* Location */}
+            <div className="p-4 rounded-2xl bg-[#080914]/75 border border-white/10 flex items-center gap-3.5 text-zinc-300 backdrop-blur-xl">
+              <div className="p-2.5 rounded-xl bg-cyan-400/10 text-[#00f0ff]">
+                <MapPin className="w-4 h-4" />
               </div>
               <div>
-                <div className="text-[10px] text-slate-500 uppercase">Red Profesional</div>
-                <div className="text-xs font-semibold">LinkedIn Profile</div>
+                <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Ubicación</div>
+                <div className="text-xs font-semibold text-white">Cochabamba, Bolivia (Remoto / Presencial)</div>
               </div>
-            </a>
+            </div>
+
+            {/* GitHub & LinkedIn row */}
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
+              <a
+                href={userProfile.github}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => soundManager.playClick()}
+                className="p-3.5 rounded-2xl bg-[#080914]/75 border border-white/10 hover:border-[#00f0ff]/50 flex items-center gap-2.5 text-zinc-300 hover:text-white transition-all group backdrop-blur-xl"
+              >
+                <GithubIcon className="w-4 h-4 text-[#00f0ff]" />
+                <span className="text-xs font-semibold">GitHub</span>
+              </a>
+
+              <a
+                href={userProfile.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => soundManager.playClick()}
+                className="p-3.5 rounded-2xl bg-[#080914]/75 border border-white/10 hover:border-[#ff003c]/50 flex items-center gap-2.5 text-zinc-300 hover:text-white transition-all group backdrop-blur-xl"
+              >
+                <LinkedinIcon className="w-4 h-4 text-[#ff003c]" />
+                <span className="text-xs font-semibold">LinkedIn</span>
+              </a>
+            </div>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Right Column: Form */}
-        <div className="lg:col-span-7">
-          <div className="p-8 bg-[#080a10]/55 border border-slate-800/80 backdrop-blur-md relative shadow-2xl clip-cyber">
-            <div className="flex items-center gap-2 pb-4 mb-6 border-b border-slate-800 font-mono text-xs text-[#00f0ff]">
-              <MessageSquare className="w-4 h-4" />
-              <span>TERMINAL DE TRANSMISIÓN // FORMULARIO</span>
+        {/* Right Column: Message Transmission Terminal Form */}
+        <motion.div
+          initial={{ opacity: 0, x: 24 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: '-60px' }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          className="lg:col-span-7"
+        >
+          <div className="p-7 sm:p-9 rounded-3xl backdrop-blur-2xl bg-[#080a14]/80 border border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-white/[0.08] font-mono text-xs">
+              <span className="text-[#00f0ff] flex items-center gap-1.5 font-bold">
+                <MessageSquare className="w-4 h-4" /> FORMULARIO DE MENSAJE DIRECTO
+              </span>
+              <span className="text-zinc-500 text-[11px]">Respuesta rápida</span>
             </div>
 
             {sent ? (
               <div className="py-12 text-center font-mono">
                 <CheckCircle2 className="w-12 h-12 text-[#fcee0a] mx-auto mb-4 animate-bounce" />
-                <h3 className="text-xl font-bold text-white mb-2">¡TRANSMISIÓN ENVIADA!</h3>
-                <p className="text-slate-400 text-xs max-w-sm mx-auto">
-                  Paquete de datos despachado. Responderé en la mayor brevedad.
+                <h3 className="text-xl font-bold text-white mb-2">¡MENSAJE ENVIADO!</h3>
+                <p className="text-zinc-400 text-xs max-w-sm mx-auto">
+                  Tu cliente de correo se ha abierto con el mensaje. Responderé lo antes posible.
                 </p>
                 <button
                   onClick={() => setSent(false)}
-                  className="mt-6 px-4 py-2 bg-slate-900 text-slate-300 text-xs border border-slate-700 hover:border-[#00f0ff]"
+                  className="mt-6 px-5 py-2.5 rounded-full bg-white/[0.05] text-zinc-300 text-xs border border-white/10 hover:border-[#00f0ff] active:scale-95 transition-all cursor-pointer"
                 >
                   Enviar otro mensaje
                 </button>
@@ -121,59 +164,59 @@ export const ContactSection: React.FC = () => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
                 <div>
-                  <label className="block text-slate-400 mb-1.5 uppercase tracking-wider text-[11px]">
-                    Nombre o Empresa
+                  <label className="block text-zinc-400 mb-1.5 uppercase tracking-wider text-[11px]">
+                    Tu Nombre o Empresa
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="Ej. Night City Tech / David"
+                    placeholder="Nombre completo o empresa..."
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#050608] border border-slate-800 focus:border-[#00f0ff] focus:outline-none text-slate-100 placeholder:text-slate-600 transition-colors"
+                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff]/50 focus:outline-none text-zinc-100 placeholder:text-zinc-600 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1.5 uppercase tracking-wider text-[11px]">
-                    Correo de Contacto
+                  <label className="block text-zinc-400 mb-1.5 uppercase tracking-wider text-[11px]">
+                    Tu Correo Electrónico
                   </label>
                   <input
                     type="email"
                     required
-                    placeholder="tu-email@empresa.com"
+                    placeholder="ejemplo@dominio.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#050608] border border-slate-800 focus:border-[#00f0ff] focus:outline-none text-slate-100 placeholder:text-slate-600 transition-colors"
+                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff]/50 focus:outline-none text-zinc-100 placeholder:text-zinc-600 transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1.5 uppercase tracking-wider text-[11px]">
-                    Mensaje / Requerimientos
+                  <label className="block text-zinc-400 mb-1.5 uppercase tracking-wider text-[11px]">
+                    Detalles del Proyecto o Mensaje
                   </label>
                   <textarea
                     rows={4}
                     required
-                    placeholder="Detalles del proyecto, arquitectura o propuesta..."
+                    placeholder="Describe las metas de tu sistema, requerimientos o propuesta laboral..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#050608] border border-slate-800 focus:border-[#00f0ff] focus:outline-none text-slate-100 placeholder:text-slate-600 transition-colors resize-none"
+                    className="w-full px-4 py-3 rounded-xl bg-white/[0.03] border border-white/10 focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff]/50 focus:outline-none text-zinc-100 placeholder:text-zinc-600 transition-all resize-none"
                   />
                 </div>
 
                 <button
                   type="submit"
                   onMouseEnter={() => soundManager.playHover()}
-                  className="w-full py-3.5 bg-[#fcee0a] hover:bg-yellow-300 text-slate-950 font-black text-sm tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-yellow-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] clip-cyber-sm"
+                  className="w-full py-3.5 rounded-xl bg-[#fcee0a] hover:bg-yellow-300 text-zinc-950 font-black text-xs tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(252,238,10,0.3)] transition-all hover:scale-[1.01] active:scale-95 cursor-pointer font-mono"
                 >
                   <Send className="w-4 h-4" />
-                  <span>TRANSMITIR MENSAJE // ENVIAR</span>
+                  <span>ENVIAR MENSAJE</span>
                 </button>
               </form>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
