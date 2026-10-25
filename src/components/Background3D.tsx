@@ -38,25 +38,22 @@ export const Background3D = () => {
     // ---- HUD Toast Banner inside DOM for Planet Interactions ----
     const toast = document.createElement('div');
     toast.className =
-      'fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-all duration-300 opacity-0 translate-y-3 font-mono text-xs px-4 py-2 border backdrop-blur-md rounded';
-    toast.style.backgroundColor = 'rgba(5, 8, 14, 0.92)';
-    toast.style.borderColor = '#00f0ff';
-    toast.style.color = '#00f0ff';
-    toast.style.boxShadow = '0 0 24px rgba(0, 240, 255, 0.35)';
+      'fixed bottom-8 left-1/2 -translate-x-1/2 z-40 pointer-events-none transition-all duration-300 opacity-0 translate-y-3 font-mono text-xs px-5 py-2.5 rounded-full border border-white/10 backdrop-blur-2xl shadow-[0_16px_40px_rgba(0,0,0,0.8)] flex items-center gap-2';
+    toast.style.backgroundColor = 'rgba(7, 9, 15, 0.88)';
     container.appendChild(toast);
 
     const showPlanetHUD = (name: string, telemetry: string, color = '#00f0ff') => {
       soundManager.playSuccess();
-      toast.style.borderColor = color;
-      toast.style.color = color;
-      toast.innerHTML = `<span style="color:#fcee0a; font-weight:bold;">[SCANNER]</span> <strong style="color:#ffffff;">${name}:</strong> ${telemetry}`;
+      toast.style.borderColor = `${color}40`;
+      toast.style.boxShadow = `0 16px 40px rgba(0, 0, 0, 0.8), 0 0 20px ${color}25`;
+      toast.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:9999px; background-color:${color}; box-shadow:0 0 10px ${color};"></span><span style="color:#a1a1aa; font-size:10px; text-transform:uppercase; letter-spacing:0.05em;">TELEMETRÍA</span><span style="color:#52525b;">·</span><strong style="color:#ffffff; font-weight:700;">${name}:</strong> <span style="color:#e4e4e7;">${telemetry}</span>`;
       toast.style.opacity = '1';
       toast.style.transform = 'translate(-50%, 0)';
       clearTimeout((toast as any).timeoutId);
       (toast as any).timeoutId = setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transform = 'translate(-50%, 12px)';
-      }, 3500);
+      }, 4000);
     };
 
     // Flag para herramientas de calibración de cámara (desactivado por defecto)
@@ -1399,8 +1396,10 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
     let frameId = 0;
     const t0 = performance.now();
     let lastTime = t0;
+    let isTabVisible = !document.hidden;
 
     const animate = () => {
+      if (!isTabVisible) return;
       frameId = requestAnimationFrame(animate);
       const now = performance.now();
       const dt = Math.min((now - lastTime) * 0.001, 0.05);
@@ -1600,11 +1599,24 @@ const baseTarget = new THREE.Vector3(55.8, 27.5, -139.0);
       composer.render();
     };
 
+    const handleVisibilityChange = () => {
+      isTabVisible = !document.hidden;
+      if (isTabVisible) {
+        lastTime = performance.now();
+        cancelAnimationFrame(frameId);
+        frameId = requestAnimationFrame(animate);
+      } else {
+        cancelAnimationFrame(frameId);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     animate();
 
     // ---- CLEANUP ----
     return () => {
       cancelAnimationFrame(frameId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('pointerdown', onPointerDown);
       window.removeEventListener('pointermove', onPointerMove);
       window.removeEventListener('pointerup', onPointerUp);

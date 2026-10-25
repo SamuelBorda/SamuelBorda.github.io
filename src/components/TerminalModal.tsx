@@ -81,7 +81,14 @@ Escribe "help" para ver los comandos operativos con ejecución en tiempo real.`,
   • github                : Abre directamente https://github.com/SamuelBorda
   • contact <mensaje>     : Prepara un correo directo para iniciar conexión
   • clear                 : Limpia el historial de la pantalla
-  • overclock             : Ejecuta prueba de rendimiento gráfico (FX)`,
+  • overclock             : Ejecuta prueba de rendimiento gráfico (FX)
+╠══════════════════════════════════════════════════════════════════╣
+║          [🛡] CIBERSEGURIDAD (DIPLOMADO & HARDENING WEB)         ║
+╠══════════════════════════════════════════════════════════════════╣
+  • pentest [target]      : Simula laboratorio Nmap (ej: "pentest localhost")
+  • vuln-scan             : Auditoría OWASP Top 10 de la aplicación actual
+  • cipher <texto>        : Demuestra AES-256 + derivación de clave (conceptual)
+  • owasp                 : Referencia OWASP Top 10 con estado de mitigación`,
         });
         break;
 
@@ -322,6 +329,118 @@ Bio         : ${userProfile.bio}`,
         });
         break;
 
+      // ---- CYBERSECURITY MODULE ----
+      case 'pentest': {
+        const target = args[0] || 'portfolio.local';
+        soundManager.playSuccess();
+        newLogs.push({
+          id: Date.now() + 1,
+          type: 'output',
+          text: `[🔍] NMAP RECON // Lab Diplomado Ciberseguridad // Target: ${target}
+--------------------------------------------------
+Starting Nmap 7.94 scan...
+
+PORT     STATE   SERVICE      VERSION
+22/tcp   closed  ssh
+80/tcp   open    http         nginx 1.25.3
+443/tcp  open    https        TLS 1.3 / AES-256-GCM
+3000/tcp filtered node-dev    [firewall]
+5432/tcp closed  postgresql
+8080/tcp closed  http-proxy
+
+OS Detection: Linux 5.x | Host is UP (0.002s latency)
+SECURITY HEADERS FOUND:
+  ✓ Strict-Transport-Security (HSTS)
+  ✓ Content-Security-Policy (CSP)
+  ✓ X-Frame-Options: DENY
+  ✓ X-Content-Type-Options: nosniff
+  ✗ Referrer-Policy: NOT SET (recomendado)
+
+Nmap scan completed. 6 ports scanned in 0.87s
+
+-> Superficie de ataque: REDUCIDA. Sin puertos críticos expuestos.`,
+        });
+        break;
+      }
+
+      case 'vuln-scan': {
+        soundManager.playSuccess();
+        newLogs.push({
+          id: Date.now() + 1,
+          type: 'output',
+          text: `[🛡] AUDITORÍA OWASP TOP 10 // samuel-borda.portfolio
+--------------------------------------------------
+Analizando vectores de ataque conocidos...
+
+  A01 Broken Access Control     → ✓ MITIGADO  (RBAC + Sanctum en todos los endpoints)
+  A02 Cryptographic Failures    → ✓ MITIGADO  (TLS 1.3 | bcrypt cost=12 | AES-256)
+  A03 Injection (SQL/XSS)       → ✓ MITIGADO  (ORM Eloquent | validación server-side)
+  A04 Insecure Design           → ✓ MITIGADO  (Threat modeling aplicado en Ceta)
+  A05 Security Misconfiguration → ⚠ REVISAR   (Referrer-Policy pendiente en prod)
+  A06 Vulnerable Components     → ✓ MITIGADO  (Dependabot + npm audit activo)
+  A07 Auth Failures             → ✓ MITIGADO  (Rate limiting | Token expiry corto)
+  A08 Software & Data Integrity → ✓ MITIGADO  (GitHub Actions CI firmado)
+  A09 Logging & Monitoring      → ⚠ PENDIENTE (Sin SIEM en entorno personal)
+  A10 SSRF                      → ✓ MITIGADO  (Sin fetch externo sin whitelist)
+
+RESUMEN: 8/10 controles implementados | Riesgo residual: BAJO
+
+-> Use "owasp" para el detalle de referencia completo.`,
+        });
+        break;
+      }
+
+      case 'cipher': {
+        const plaintext = argStr || 'samuel.borda@example.com';
+        const fakeKey = Array.from({ length: 32 }, () =>
+          Math.floor(Math.random() * 16).toString(16)
+        ).join('');
+        const fakeCiphertext = Array.from({ length: 44 }, () =>
+          Math.floor(Math.random() * 16).toString(16)
+        ).join('');
+        soundManager.playSuccess();
+        newLogs.push({
+          id: Date.now() + 1,
+          type: 'success',
+          text: `[🔐] AES-256-GCM ENCRYPT // MODO DEMOSTRATIVO
+--------------------------------------------------
+Plaintext   : "${plaintext}"
+Algoritmo   : AES-256-GCM (Galois/Counter Mode — autenticado)
+Derivación  : PBKDF2 + SHA-256 | 310,000 iteraciones
+Salt        : ${fakeKey.slice(0, 16)} (random 128-bit)
+Key (256-b) : ${fakeKey}
+Ciphertext  : ${fakeCiphertext}==
+Auth Tag    : ${fakeKey.slice(0, 8)} (GCM integrity tag)
+
+✓ GCM garantiza confidencialidad + integridad en un solo paso.
+✓ Sin clave correcta, descifrar requiere ~3.4×10^38 años.`,
+        });
+        break;
+      }
+
+      case 'owasp':
+        newLogs.push({
+          id: Date.now() + 1,
+          type: 'output',
+          text: `[📋] OWASP TOP 10 — 2021 REFERENCE
+--------------------------------------------------
+  A01  Broken Access Control      → Control de permisos inadecuado
+  A02  Cryptographic Failures     → Datos sensibles sin cifrar en tránsito/reposo
+  A03  Injection                  → SQL/XSS/Command injection por inputs sin sanitizar
+  A04  Insecure Design            → Falta de threat modeling en el diseño
+  A05  Security Misconfiguration  → Headers faltantes, debug activo en prod
+  A06  Vulnerable & Outdated Deps → Dependencias con CVEs conocidos
+  A07  Identification & Auth      → Brute force, sesiones sin expiración
+  A08  Software Integrity Failure  → Pipeline CI/CD sin firmas
+  A09  Logging & Monitoring Fail  → Sin alertas ante incidentes activos
+  A10  SSRF                       → Requests hacia infra interna desde servidor
+
+-> Fuente oficial: https://owasp.org/Top10/
+-> Ejecuta "vuln-scan" para ver el estado de mitigación en este stack.`,
+        });
+        break;
+
+
       default:
         newLogs.push({
           id: Date.now() + 1,
@@ -378,7 +497,7 @@ Bio         : ${userProfile.bio}`,
         {/* Quick action pill toolbar */}
         <div className="px-4 py-2 bg-[#080a10] border-b border-slate-800/80 flex flex-wrap gap-2 text-[10px]">
           <span className="text-slate-500 self-center">Atajos:</span>
-          {['help', 'projects', 'open 1', 'skills php', 'planets', 'whoami', 'clear'].map((action) => (
+          {['help', 'projects', 'whoami', 'pentest', 'vuln-scan', 'owasp', 'cipher Samuel', 'planets', 'clear'].map((action) => (
             <button
               key={action}
               onClick={() => executeCommand(action)}

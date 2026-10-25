@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Send, Mail, CheckCircle2, MessageSquare, MapPin, MessageCircle, ArrowUpRight } from 'lucide-react';
+import { Send, Mail, CheckCircle2, MessageSquare, MapPin, MessageCircle, ArrowUpRight, Copy } from 'lucide-react';
 import { GithubIcon, LinkedinIcon } from './BrandIcons';
 import { soundManager } from '../utils/soundEffects';
 import { userProfile } from '../data/profile';
 import confetti from 'canvas-confetti';
 
-export const ContactSection: React.FC = () => {
+interface ContactSectionProps {
+  onCopyEmail?: () => void;
+}
+
+export const ContactSection: React.FC<ContactSectionProps> = ({ onCopyEmail }) => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [sent, setSent] = useState(false);
 
@@ -56,12 +60,12 @@ export const ContactSection: React.FC = () => {
           {/* Contact Direct Cards */}
           <div className="space-y-2.5 font-mono text-xs">
             {/* Email */}
-            <a
-              href={`mailto:${userProfile.email}`}
-              onClick={() => soundManager.playClick()}
-              className="p-4 rounded-2xl bg-[#080914]/75 border border-white/10 hover:border-[#fcee0a]/50 flex items-center justify-between text-zinc-300 hover:text-white transition-all group backdrop-blur-xl"
-            >
-              <div className="flex items-center gap-3.5 overflow-hidden">
+            <div className="p-4 rounded-2xl bg-[#080914]/75 border border-white/10 hover:border-[#fcee0a]/50 flex items-center justify-between text-zinc-300 hover:text-white transition-all group backdrop-blur-xl">
+              <a
+                href={`mailto:${userProfile.email}`}
+                onClick={() => soundManager.playClick()}
+                className="flex items-center gap-3.5 overflow-hidden flex-1"
+              >
                 <div className="p-2.5 rounded-xl bg-yellow-400/10 text-[#fcee0a] group-hover:scale-105 transition-transform">
                   <Mail className="w-4 h-4" />
                 </div>
@@ -69,9 +73,24 @@ export const ContactSection: React.FC = () => {
                   <div className="text-[10px] text-zinc-500 uppercase tracking-wider">Correo Electrónico</div>
                   <div className="text-xs font-semibold text-white truncate">{userProfile.email}</div>
                 </div>
-              </div>
-              <ArrowUpRight className="w-4 h-4 text-zinc-500 group-hover:text-[#fcee0a] transition-colors" />
-            </a>
+              </a>
+              {onCopyEmail && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onCopyEmail();
+                  }}
+                  onMouseEnter={() => soundManager.playHover()}
+                  title="Copiar dirección de correo"
+                  className="px-2.5 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.1] text-zinc-400 hover:text-[#00f0ff] transition-all text-[11px] font-mono flex items-center gap-1.5 shrink-0 cursor-pointer"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copiar</span>
+                </button>
+              )}
+            </div>
 
             {/* WhatsApp */}
             <a

@@ -1,10 +1,14 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDown, ExternalLink, Code2, GraduationCap, MapPin, MessageCircle, Mail } from 'lucide-react';
+import { ArrowDown, ExternalLink, Code2, GraduationCap, MapPin, MessageCircle, Mail, Download, Copy } from 'lucide-react';
 import { soundManager } from '../utils/soundEffects';
 import { userProfile } from '../data/profile';
 
-export const HeroSection: React.FC = () => {
+interface HeroSectionProps {
+  onCopyEmail?: () => void;
+}
+
+export const HeroSection: React.FC<HeroSectionProps> = ({ onCopyEmail }) => {
   return (
     <section className="relative min-h-[92vh] flex flex-col justify-center items-center px-4 pt-28 pb-16 max-w-7xl mx-auto">
       {/* Refined Status Pill Badge */}
@@ -51,7 +55,7 @@ export const HeroSection: React.FC = () => {
           </p>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 w-full sm:w-auto mb-10">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto mb-10">
             <a
               href="#projects"
               onClick={() => soundManager.playWarp()}
@@ -63,13 +67,26 @@ export const HeroSection: React.FC = () => {
             </a>
 
             <a
+              href="/cv.pdf"
+              download="Samuel_Borda_CV.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => soundManager.playSuccess()}
+              onMouseEnter={() => soundManager.playHover()}
+              className="px-5 py-3.5 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-[#fcee0a]/50 text-zinc-200 hover:text-white font-mono font-bold text-xs tracking-wide backdrop-blur-xl transition-all flex items-center justify-center gap-2 text-center active:scale-95 cursor-pointer"
+            >
+              <Download className="w-4 h-4 text-[#fcee0a] shrink-0" />
+              <span>DESCARGAR CV</span>
+            </a>
+
+            <a
               href="#contact"
               onClick={() => soundManager.playClick()}
               onMouseEnter={() => soundManager.playHover()}
-              className="px-6 py-3.5 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-[#00f0ff]/50 text-zinc-200 hover:text-white font-mono font-bold text-xs tracking-wide backdrop-blur-xl transition-all flex items-center justify-center gap-2 text-center active:scale-95 cursor-pointer"
+              className="px-5 py-3.5 rounded-full bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 hover:border-[#00f0ff]/50 text-zinc-200 hover:text-white font-mono font-bold text-xs tracking-wide backdrop-blur-xl transition-all flex items-center justify-center gap-2 text-center active:scale-95 cursor-pointer"
             >
               <MessageCircle className="w-4 h-4 text-[#00f0ff] shrink-0" />
-              <span>INICIAR CONTACTO</span>
+              <span>CONTACTO</span>
             </a>
           </div>
 
@@ -152,13 +169,26 @@ export const HeroSection: React.FC = () => {
                 <MapPin className="w-3.5 h-3.5 text-[#00f0ff] shrink-0" />
                 <span>{userProfile.location}</span>
               </div>
-              <a
-                href={`mailto:${userProfile.email}`}
-                className="flex items-center gap-2 p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-zinc-300 hover:text-white hover:border-[#fcee0a]/40 transition-colors"
-              >
-                <Mail className="w-3.5 h-3.5 text-[#fcee0a] shrink-0" />
-                <span className="truncate">{userProfile.email}</span>
-              </a>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/[0.05] text-zinc-300">
+                <a
+                  href={`mailto:${userProfile.email}`}
+                  className="flex items-center gap-2 hover:text-white transition-colors overflow-hidden"
+                >
+                  <Mail className="w-3.5 h-3.5 text-[#fcee0a] shrink-0" />
+                  <span className="truncate">{userProfile.email}</span>
+                </a>
+                {onCopyEmail && (
+                  <button
+                    onClick={onCopyEmail}
+                    onMouseEnter={() => soundManager.playHover()}
+                    title="Copiar correo al portapapeles"
+                    className="px-2 py-1 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-zinc-400 hover:text-[#00f0ff] transition-all text-[10px] font-mono flex items-center gap-1 shrink-0 cursor-pointer"
+                  >
+                    <Copy className="w-3 h-3" />
+                    <span>Copiar</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Footer Direct GitHub Link */}

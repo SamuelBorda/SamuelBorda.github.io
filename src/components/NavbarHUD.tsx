@@ -1,31 +1,27 @@
 import React, { useState } from 'react';
-import { Volume2, VolumeX, Terminal, Tv, Menu, X, ArrowUpRight } from 'lucide-react';
+import { Volume2, Terminal, Menu, X, ArrowUpRight, Search } from 'lucide-react';
 import { GithubIcon } from './BrandIcons';
 import { soundManager } from '../utils/soundEffects';
 import { userProfile } from '../data/profile';
 
 interface NavbarHUDProps {
   onOpenTerminal: () => void;
+  onOpenCommandPalette: () => void;
+  onToggleSoundscape: () => void;
+  isSoundscapeActive: boolean;
   scanlinesActive: boolean;
   onToggleScanlines: () => void;
 }
 
 export const NavbarHUD: React.FC<NavbarHUDProps> = ({
   onOpenTerminal,
+  onOpenCommandPalette,
+  onToggleSoundscape,
+  isSoundscapeActive,
   scanlinesActive,
   onToggleScanlines,
 }) => {
-  const [soundOn, setSoundOn] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  const toggleSound = () => {
-    const nextState = !soundOn;
-    setSoundOn(nextState);
-    soundManager.enabled = nextState;
-    if (nextState) {
-      soundManager.playClick();
-    }
-  };
 
   const handleNavClick = () => {
     soundManager.playClick();
@@ -92,6 +88,54 @@ export const NavbarHUD: React.FC<NavbarHUDProps> = ({
 
         {/* Right: Controls & Actions */}
         <div className="flex items-center gap-2">
+          {/* Quick Search / Command Palette Shortcut Pill */}
+          <button
+            onClick={() => {
+              soundManager.playClick();
+              onOpenCommandPalette();
+            }}
+            onMouseEnter={() => soundManager.playHover()}
+            title="Abrir paleta de comandos rápidos (Ctrl + K)"
+            className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-[#00f0ff]/40 text-zinc-300 hover:text-white transition-all text-xs font-mono cursor-pointer active:scale-95"
+          >
+            <Search className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="text-[10px] text-zinc-400 bg-white/[0.06] px-1.5 py-0.5 rounded border border-white/10 font-bold">
+              ⌘K
+            </span>
+          </button>
+
+          {/* Cosmic Soundscape with Animated Mini Equalizer */}
+          <button
+            onClick={() => {
+              soundManager.playClick();
+              onToggleSoundscape();
+            }}
+            onMouseEnter={() => soundManager.playHover()}
+            title={
+              isSoundscapeActive
+                ? 'Pausar paisaje sonoro espacial (432Hz)'
+                : 'Activar paisaje sonoro cósmico (Web Audio 432Hz)'
+            }
+            className={`px-2.5 py-1.5 rounded-full border transition-all text-xs active:scale-95 cursor-pointer flex items-center gap-1.5 ${
+              isSoundscapeActive
+                ? 'bg-[#00f0ff]/15 border-[#00f0ff]/50 text-[#00f0ff]'
+                : 'bg-white/[0.03] border-white/10 text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.06]'
+            }`}
+          >
+            {isSoundscapeActive ? (
+              <div className="flex items-end gap-0.5 h-3.5 px-0.5">
+                <span className="w-0.5 bg-[#00f0ff] rounded-full animate-eq-1" />
+                <span className="w-0.5 bg-[#00f0ff] rounded-full animate-eq-2" />
+                <span className="w-0.5 bg-[#00f0ff] rounded-full animate-eq-3" />
+              </div>
+            ) : (
+              <Volume2 className="w-3.5 h-3.5" />
+            )}
+            <span className="hidden lg:inline text-[10px] font-mono font-medium">
+              {isSoundscapeActive ? '432Hz' : 'Audio'}
+            </span>
+          </button>
+
           {/* CLI Terminal Pill */}
           <button
             onClick={() => {
@@ -104,37 +148,6 @@ export const NavbarHUD: React.FC<NavbarHUDProps> = ({
           >
             <Terminal className="w-3.5 h-3.5 text-[#00f0ff]" />
             <span className="hidden sm:inline">CLI</span>
-          </button>
-
-          {/* CRT Scanline Toggle */}
-          <button
-            onClick={() => {
-              soundManager.playClick();
-              onToggleScanlines();
-            }}
-            onMouseEnter={() => soundManager.playHover()}
-            title={scanlinesActive ? 'Desactivar Scanlines' : 'Activar Scanlines Retro'}
-            className={`p-2 rounded-full border transition-all text-xs active:scale-95 cursor-pointer ${
-              scanlinesActive
-                ? 'bg-[#ff003c]/20 border-[#ff003c] text-[#ff003c]'
-                : 'bg-white/[0.03] border-white/10 text-zinc-400 hover:text-white hover:bg-white/[0.08]'
-            }`}
-          >
-            <Tv className="w-3.5 h-3.5" />
-          </button>
-
-          {/* Audio Toggle */}
-          <button
-            onClick={toggleSound}
-            onMouseEnter={() => soundManager.playHover()}
-            title={soundOn ? 'Silenciar Efectos de Audio' : 'Activar Audio'}
-            className={`p-2 rounded-full border transition-all active:scale-95 cursor-pointer ${
-              soundOn
-                ? 'bg-[#00f0ff]/10 border-[#00f0ff]/40 text-[#00f0ff]'
-                : 'bg-white/[0.03] border-white/10 text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            {soundOn ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
           </button>
 
           {/* GitHub Direct Link */}
@@ -166,6 +179,16 @@ export const NavbarHUD: React.FC<NavbarHUDProps> = ({
       {/* Mobile Drawer Dropdown */}
       {mobileMenuOpen && (
         <div className="md:hidden mt-2 p-3 rounded-2xl backdrop-blur-2xl bg-[#07090e]/95 border border-white/10 shadow-2xl flex flex-col gap-1 font-mono text-xs">
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              onOpenCommandPalette();
+            }}
+            className="py-2.5 px-4 rounded-xl hover:bg-white/[0.08] text-zinc-200 hover:text-[#00f0ff] transition-colors flex items-center justify-between text-left"
+          >
+            <span>Buscar / Comandos</span>
+            <span className="text-[10px] text-zinc-500">Ctrl+K</span>
+          </button>
           <a
             href="#projects"
             onClick={handleNavClick}
@@ -187,8 +210,19 @@ export const NavbarHUD: React.FC<NavbarHUDProps> = ({
           >
             03 // Contacto
           </a>
+          <button
+            onClick={() => {
+              onToggleScanlines();
+              handleNavClick();
+            }}
+            className="py-2 px-4 rounded-xl hover:bg-white/[0.08] text-zinc-400 hover:text-white transition-colors text-left flex items-center justify-between"
+          >
+            <span>Scanlines CRT</span>
+            <span className="text-[10px] text-zinc-500">{scanlinesActive ? 'Activo' : 'Inactivo'}</span>
+          </button>
         </div>
       )}
     </header>
   );
 };
+

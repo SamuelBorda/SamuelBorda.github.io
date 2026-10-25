@@ -12,6 +12,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
   const [glarePos, setGlarePos] = useState({ x: 50, y: 50, opacity: 0 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -28,17 +30,19 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
 
     setRotateX(rotX);
     setRotateY(rotY);
+    setMousePos({ x, y });
 
     setGlarePos({
       x: (x / rect.width) * 100,
       y: (y / rect.height) * 100,
-      opacity: 0.15,
+      opacity: 0.12,
     });
   };
 
   const handleMouseLeave = () => {
     setRotateX(0);
     setRotateY(0);
+    setIsHovered(false);
     setGlarePos((prev) => ({ ...prev, opacity: 0 }));
   };
 
@@ -46,21 +50,38 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
     <div
       ref={cardRef}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => soundManager.playHover()}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        soundManager.playHover();
+      }}
       onMouseLeave={handleMouseLeave}
       style={{
         transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
         transition: 'transform 0.15s ease-out',
       }}
-      className="relative flex flex-col justify-between rounded-3xl backdrop-blur-2xl bg-[#090b14]/75 border border-white/10 hover:border-cyan-400/40 p-6 sm:p-7 shadow-[0_12px_36px_rgba(0,0,0,0.5)] transition-all duration-300 group hover:shadow-[0_16px_40px_rgba(0,240,255,0.12)] overflow-hidden"
+      className="relative p-[1px] rounded-3xl group transition-all duration-300"
     >
-      {/* Holographic Subtle Glare */}
+      {/* Dynamic Cursor Spotlight Border Glow */}
       <div
-        className="pointer-events-none absolute -inset-px transition-opacity duration-300 rounded-3xl"
+        className="pointer-events-none absolute inset-0 rounded-3xl transition-opacity duration-300"
         style={{
-          background: `radial-gradient(circle 280px at ${glarePos.x}% ${glarePos.y}%, rgba(0, 240, 255, ${glarePos.opacity}), transparent)`,
+          opacity: isHovered ? 1 : 0,
+          background: `radial-gradient(350px circle at ${mousePos.x}px ${mousePos.y}px, rgba(0, 240, 255, 0.45), rgba(252, 238, 10, 0.2), transparent 70%)`,
         }}
       />
+
+      {/* Static Border Fallback when not hovered */}
+      <div className="pointer-events-none absolute inset-0 rounded-3xl border border-white/10 group-hover:border-transparent transition-colors" />
+
+      {/* Card Content Interior with Glassmorphism */}
+      <div className="relative h-full flex flex-col justify-between rounded-[23px] backdrop-blur-2xl bg-[#090b14]/90 p-6 sm:p-7 shadow-[0_12px_36px_rgba(0,0,0,0.6)] group-hover:shadow-[0_16px_40px_rgba(0,240,255,0.12)] overflow-hidden">
+        {/* Holographic Subtle Glare */}
+        <div
+          className="pointer-events-none absolute -inset-px transition-opacity duration-300 rounded-[23px]"
+          style={{
+            background: `radial-gradient(circle 280px at ${glarePos.x}% ${glarePos.y}%, rgba(0, 240, 255, ${glarePos.opacity}), transparent)`,
+          }}
+        />
 
       {/* Top Section */}
       <div>
@@ -155,5 +176,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };

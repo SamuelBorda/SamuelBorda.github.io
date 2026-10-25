@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, Server, Layout, Database, CheckCircle2, Sparkles, Terminal } from 'lucide-react';
+import { Cpu, Server, Layout, Database, CheckCircle2, Sparkles, Terminal, ShieldAlert } from 'lucide-react';
 import { detailedSkills, type DetailedSkill } from '../data/skills';
 import { soundManager } from '../utils/soundEffects';
 
 export const SkillsInventory: React.FC = () => {
-  const [selectedCategory, setSelectedCategory] = useState<'all' | 'backend' | 'frontend' | 'infra'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<'all' | 'backend' | 'frontend' | 'infra' | 'security'>('all');
   const [activeSkill, setActiveSkill] = useState<DetailedSkill>(detailedSkills[0]);
 
   const categories = [
-    { id: 'all', label: 'Todo el Stack', icon: Cpu, count: detailedSkills.length },
-    { id: 'backend', label: 'Backend & APIs', icon: Server, count: detailedSkills.filter(s => s.category === 'backend').length },
-    { id: 'frontend', label: 'Frontend Moderno', icon: Layout, count: detailedSkills.filter(s => s.category === 'frontend').length },
-    { id: 'infra', label: 'Bases de Datos & DevOps', icon: Database, count: detailedSkills.filter(s => s.category === 'infra').length },
+    { id: 'all', label: 'Todo el Stack', icon: Cpu, count: detailedSkills.length, color: '#00f0ff' },
+    { id: 'backend', label: 'Backend & APIs', icon: Server, count: detailedSkills.filter(s => s.category === 'backend').length, color: '#00f0ff' },
+    { id: 'frontend', label: 'Frontend Moderno', icon: Layout, count: detailedSkills.filter(s => s.category === 'frontend').length, color: '#00f0ff' },
+    { id: 'infra', label: 'DevOps & Redes', icon: Database, count: detailedSkills.filter(s => s.category === 'infra').length, color: '#00f0ff' },
+    { id: 'security', label: 'Ciberseguridad', icon: ShieldAlert, count: detailedSkills.filter(s => s.category === 'security').length, color: '#ff003c' },
   ];
 
   const filteredSkills = selectedCategory === 'all'
@@ -62,7 +63,11 @@ export const SkillsInventory: React.FC = () => {
               onMouseEnter={() => soundManager.playHover()}
               className={`px-4 py-2 rounded-full text-xs font-mono font-medium transition-all flex items-center gap-2 active:scale-95 cursor-pointer ${
                 isSelected
-                  ? 'bg-[#fcee0a] text-zinc-950 font-bold shadow-[0_0_16px_rgba(252,238,10,0.3)]'
+                  ? cat.id === 'security'
+                    ? 'bg-[#ff003c]/90 text-white font-bold shadow-[0_0_16px_rgba(255,0,60,0.4)]'
+                    : 'bg-[#fcee0a] text-zinc-950 font-bold shadow-[0_0_16px_rgba(252,238,10,0.3)]'
+                  : cat.id === 'security'
+                  ? 'text-[#ff003c]/70 hover:text-[#ff003c] hover:bg-[#ff003c]/10 border border-[#ff003c]/20'
                   : 'text-zinc-300 hover:text-white hover:bg-white/[0.06]'
               }`}
             >
@@ -72,6 +77,7 @@ export const SkillsInventory: React.FC = () => {
                 {cat.count}
               </span>
             </button>
+
           );
         })}
       </motion.div>
@@ -165,7 +171,7 @@ export const SkillsInventory: React.FC = () => {
                 <Terminal className="w-4 h-4 text-[#fcee0a]" /> DETALLE DE COMPETENCIA
               </span>
               <span className="text-zinc-400">
-                {activeSkill.years} Años Práctica
+                {activeSkill.years} {activeSkill.years === 1 ? 'Año de Formación' : 'Años Práctica'}
               </span>
             </div>
 
@@ -210,7 +216,7 @@ export const SkillsInventory: React.FC = () => {
             <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between font-mono text-xs">
               <span className="text-zinc-400">NIVEL PRÁCTICO:</span>
               <span className="text-[#fcee0a] font-bold">
-                {activeSkill.levelPercent}% // {activeSkill.years >= 3.5 ? 'PRODUCCIÓN / AVANZADO' : 'INTERMEDIO SÓLIDO'}
+                {activeSkill.levelPercent}% // {activeSkill.category === 'security' ? 'DIPLOMADO / FORMATIVO' : activeSkill.years >= 3.5 ? 'PRODUCCIÓN / AVANZADO' : 'INTERMEDIO SÓLIDO'}
               </span>
             </div>
           </div>
