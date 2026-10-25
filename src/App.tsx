@@ -49,7 +49,7 @@ export function App() {
     const isPlaying = soundManager.toggleAmbientSoundscape();
     setIsSoundscapeActive(isPlaying);
     if (isPlaying) {
-      showToast('♪ Paisaje sonoro armónico activado (Ambiente Relajante)');
+      showToast('Paisaje sonoro activado');
     } else {
       showToast('Paisaje sonoro en pausa');
     }
@@ -90,12 +90,7 @@ export function App() {
     // se reanuda imperceptiblemente con el primer toque, scroll o tecla
     const resumeOnInteraction = () => {
       try {
-        if (!soundManager.isAmbientPlaying) {
-          soundManager.startAmbientSoundscape();
-        } else {
-          soundManager.resumeAudioContext();
-        }
-        setIsSoundscapeActive(true);
+        soundManager.resumeAudioContext();
       } catch {
         // Ignorar
       }

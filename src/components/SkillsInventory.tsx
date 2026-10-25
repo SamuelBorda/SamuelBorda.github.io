@@ -38,7 +38,7 @@ export const SkillsInventory: React.FC = () => {
           Dominio & <span className="text-[#00f0ff]">Herramientas</span>
         </h2>
         <p className="text-zinc-400 text-sm sm:text-base mt-3 font-light max-w-2xl mx-auto">
-          Especialización central en arquitectura backend con <strong className="text-[#fcee0a] font-medium">Laravel & PHP 8</strong>, interfaces reactivas en <strong className="text-[#00f0ff] font-medium">Next.js & React 19</strong>, y transmisión en tiempo real con <strong className="text-white font-medium">WebSockets</strong>.
+          Especialización central en arquitectura backend con <strong className="text-[#fcee0a] font-medium">Laravel & PHP 8</strong>, interfaces reactivas en <strong className="text-[#00f0ff] font-medium">Next.js & React 19</strong>, transmisión en tiempo real con <strong className="text-white font-medium">WebSockets</strong>, y enfoque integral en <strong className="text-[#ff003c] font-medium">ciberseguridad y buenas prácticas defensivas</strong>.
         </p>
       </motion.div>
 
@@ -171,7 +171,7 @@ export const SkillsInventory: React.FC = () => {
                 <Terminal className="w-4 h-4 text-[#fcee0a]" /> DETALLE DE COMPETENCIA
               </span>
               <span className="text-zinc-400">
-                {activeSkill.years} {activeSkill.years === 1 ? 'Año de Formación' : 'Años Práctica'}
+                {activeSkill.years} {activeSkill.years === 1 ? 'Año Práctica' : 'Años Práctica'}
               </span>
             </div>
 
@@ -216,7 +216,7 @@ export const SkillsInventory: React.FC = () => {
             <div className="pt-4 border-t border-white/[0.08] flex items-center justify-between font-mono text-xs">
               <span className="text-zinc-400">NIVEL PRÁCTICO:</span>
               <span className="text-[#fcee0a] font-bold">
-                {activeSkill.levelPercent}% // {activeSkill.category === 'security' ? 'DIPLOMADO / FORMATIVO' : activeSkill.years >= 3.5 ? 'PRODUCCIÓN / AVANZADO' : 'INTERMEDIO SÓLIDO'}
+                {activeSkill.levelPercent}% // {activeSkill.category === 'security' ? (activeSkill.isPrimaryMastery ? 'CORE DEFENSIVO / HARDENING' : 'PRÁCTICO / DEFENSIVO') : activeSkill.years >= 3.5 ? 'PRODUCCIÓN / AVANZADO' : 'INTERMEDIO SÓLIDO'}
               </span>
             </div>
           </div>

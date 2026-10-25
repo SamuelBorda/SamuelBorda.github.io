@@ -24,7 +24,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onCopyEmail }) => {
         </span>
         <span className="font-semibold text-white">Ingeniería de Sistemas</span>
         <span className="text-zinc-600">·</span>
-        <span className="text-[#00f0ff]">Fullstack</span>
+        <span className="text-[#00f0ff]">Fullstack Developer</span>
         <span className="text-zinc-600">·</span>
         <span className="text-zinc-400">Cochabamba, Bolivia</span>
       </motion.div>
@@ -38,7 +38,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onCopyEmail }) => {
           className="lg:col-span-7 flex flex-col items-start text-left"
         >
           <div className="inline-block text-xs font-mono font-bold tracking-widest text-[#00f0ff] uppercase mb-3">
-            Fullstack Developer // Web & Backend Architecture
+            Fullstack Developer // Web Architecture & Ciberseguridad
           </div>
 
           <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-[1.06] mb-6">
@@ -49,9 +49,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onCopyEmail }) => {
           </h1>
 
           <p className="text-zinc-300 text-base sm:text-lg max-w-2xl font-light mb-8 leading-relaxed">
-            <strong className="text-white font-medium">Ingeniero en Sistemas</strong> especializado en arquitectura web fullstack con backend sólido en{' '}
-            <strong className="text-[#fcee0a] font-semibold">Laravel & PHP 8</strong> (APIs RESTful, persistencia relacional y WebSockets en tiempo real), complementado con interfaces reactivas y optimizadas en{' '}
-            <strong className="text-[#00f0ff] font-semibold">Next.js & React 19</strong>.
+            <strong className="text-white font-medium">Ingeniero en Sistemas</strong> y <strong className="text-white font-medium">Fullstack Developer</strong> especializado en arquitectura web con backend sólido en{' '}
+            <strong className="text-[#fcee0a] font-semibold">Laravel & PHP 8</strong> (APIs RESTful, persistencia relacional y WebSockets en tiempo real), interfaces reactivas en{' '}
+            <strong className="text-[#00f0ff] font-semibold">Next.js & React 19</strong>, y sólidos conocimientos aplicados en{' '}
+            <strong className="text-[#ff003c] font-semibold">ciberseguridad y buenas prácticas defensivas</strong>.
           </p>
 
           {/* Action Buttons */}
@@ -148,7 +149,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onCopyEmail }) => {
             </div>
 
             {/* Metric Highlights */}
-            <div className="grid grid-cols-3 gap-2.5 mb-6 text-center">
+            <div className="grid grid-cols-2 gap-2.5 mb-6 text-center">
               <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
                 <div className="text-lg font-black text-[#fcee0a] font-mono">+4</div>
                 <div className="text-[10px] text-zinc-400 uppercase font-mono mt-0.5">Años Práctica</div>
@@ -160,6 +161,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onCopyEmail }) => {
               <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
                 <div className="text-lg font-black text-white font-mono">Realtime</div>
                 <div className="text-[10px] text-zinc-400 uppercase font-mono mt-0.5">WebSockets</div>
+              </div>
+              <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/[0.06]">
+                <div className="text-lg font-black text-[#ff003c] font-mono">Seguridad</div>
+                <div className="text-[10px] text-zinc-400 uppercase font-mono mt-0.5">Ciberseguridad</div>
               </div>
             </div>
 

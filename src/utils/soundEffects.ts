@@ -4,20 +4,30 @@ class SoundFX {
   private ctx: AudioContext | null = null;
   public enabled: boolean = true;
 
-  // Ambient soundscape nodes
+  // Dedicated Master Audio Bus for Background Ambient Soundscape
   public isAmbientPlaying: boolean = false;
-  private ambientGain: GainNode | null = null;
+  private ambientMasterGain: GainNode | null = null;
+  private ambientFilter: BiquadFilterNode | null = null;
   private ambientOscs: OscillatorNode[] = [];
   private ambientLfo: OscillatorNode | null = null;
   private ambientChimeTimer: ReturnType<typeof setInterval> | null = null;
+  private ambientChimeTimeout: ReturnType<typeof setTimeout> | null = null;
 
   private initCtx() {
     if (!this.ctx && typeof window !== 'undefined') {
       const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       this.ctx = new AudioCtx();
     }
-    if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => {});
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().catch(() => {});
+      }
+      // Create permanent master gain for ambient soundscape
+      if (!this.ambientMasterGain) {
+        this.ambientMasterGain = this.ctx.createGain();
+        this.ambientMasterGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        this.ambientMasterGain.connect(this.ctx.destination);
+      }
     }
   }
 
@@ -25,6 +35,10 @@ class SoundFX {
   public resumeAudioContext() {
     if (this.ctx && this.ctx.state === 'suspended') {
       this.ctx.resume().catch(() => {});
+    }
+    // Only launch ambient soundscape if it is flagged as active and not muted
+    if (this.isAmbientPlaying && this.ambientOscs.length === 0) {
+      this.startAmbientSoundscape();
     }
   }
 
@@ -163,6 +177,29 @@ class SoundFX {
   }
 
   // Ambient Warm Cosmic Soundscape (Procedural Soft Harmonic Pad + Ethereal Bells)
+  private ambientVolume: number = 0.6; // 0.0 to 1.0
+
+  getAmbientVolume(): number {
+    return this.ambientVolume;
+  }
+
+  // Real-time volume control directly modulating ambientMasterGain
+  setAmbientVolume(vol: number) {
+    this.ambientVolume = Math.max(0, Math.min(1, vol));
+    this.initCtx();
+    if (this.ambientMasterGain && this.ctx) {
+      this.ambientMasterGain.gain.cancelScheduledValues(this.ctx.currentTime);
+      if (this.isAmbientPlaying) {
+        // Soft acoustic scaling (max ceiling 0.08)
+        const targetGain = this.ambientVolume * 0.08;
+        this.ambientMasterGain.gain.setValueAtTime(this.ambientMasterGain.gain.value, this.ctx.currentTime);
+        this.ambientMasterGain.gain.linearRampToValueAtTime(targetGain, this.ctx.currentTime + 0.04);
+      } else {
+        this.ambientMasterGain.gain.setValueAtTime(0, this.ctx.currentTime);
+      }
+    }
+  }
+
   toggleAmbientSoundscape(): boolean {
     if (this.isAmbientPlaying) {
       this.stopAmbientSoundscape();
@@ -173,9 +210,9 @@ class SoundFX {
     }
   }
 
-  // Soft celestial bell note generator (pentatonic harmony)
+  // Soft celestial bell note generator (pentatonic harmony) routed into ambientMasterGain
   private playRandomCelestialChime() {
-    if (!this.ctx || !this.isAmbientPlaying || !this.enabled) return;
+    if (!this.ctx || !this.isAmbientPlaying || !this.enabled || !this.ambientMasterGain) return;
     try {
       const pentatonic = [523.25, 587.33, 659.25, 783.99, 880.00, 1046.50]; // C5, D5, E5, G5, A5, C6
       const freq = pentatonic[Math.floor(Math.random() * pentatonic.length)];
@@ -188,14 +225,15 @@ class SoundFX {
 
       // Delicate sparkle bell envelope
       gain.gain.setValueAtTime(0.0001, this.ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0.012, this.ctx.currentTime + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.00001, this.ctx.currentTime + 3.2);
+      gain.gain.linearRampToValueAtTime(0.18, this.ctx.currentTime + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.00001, this.ctx.currentTime + 3.0);
 
       osc.connect(gain);
-      gain.connect(this.ctx.destination);
+      // Connected to ambientMasterGain so volume slider and mute control it 100%
+      gain.connect(this.ambientMasterGain);
 
       osc.start();
-      osc.stop(this.ctx.currentTime + 3.2);
+      osc.stop(this.ctx.currentTime + 3.0);
     } catch {
       // ignore
     }
@@ -204,21 +242,35 @@ class SoundFX {
   startAmbientSoundscape() {
     try {
       this.initCtx();
-      if (!this.ctx) return;
-      this.stopAmbientSoundscape();
+      if (!this.ctx || !this.ambientMasterGain) return;
 
-      const masterGain = this.ctx.createGain();
-      masterGain.gain.setValueAtTime(0.001, this.ctx.currentTime);
-      // Smooth warm fade-in over 2.5 seconds
-      masterGain.gain.exponentialRampToValueAtTime(0.038, this.ctx.currentTime + 2.5);
+      this.isAmbientPlaying = true;
 
-      // Warm buttery lowpass filter - no harsh resonance, soothing cutoff
+      // 1. Smoothly ramp master gain to current user volume
+      const targetGain = this.ambientVolume * 0.08;
+      this.ambientMasterGain.gain.cancelScheduledValues(this.ctx.currentTime);
+      this.ambientMasterGain.gain.setValueAtTime(this.ambientMasterGain.gain.value, this.ctx.currentTime);
+      this.ambientMasterGain.gain.linearRampToValueAtTime(targetGain, this.ctx.currentTime + 0.8);
+
+      // 2. If oscillators are already active, unmuting the master bus is sufficient
+      if (this.ambientOscs.length > 0) {
+        if (!this.ambientChimeTimer) {
+          this.ambientChimeTimer = setInterval(() => {
+            if (Math.random() > 0.2) this.playRandomCelestialChime();
+          }, 5000);
+        }
+        return;
+      }
+
+      // 3. Warm buttery lowpass filter - friendly, comforting & relaxing
       const filter = this.ctx.createBiquadFilter();
       filter.type = 'lowpass';
       filter.frequency.setValueAtTime(540, this.ctx.currentTime);
-      filter.Q.setValueAtTime(0.7, this.ctx.currentTime); // Gentle natural roll-off
+      filter.Q.setValueAtTime(0.7, this.ctx.currentTime);
+      filter.connect(this.ambientMasterGain);
+      this.ambientFilter = filter;
 
-      // Uplifting, warm Fmaj9 chord (F3, A3, C4, E4, G4) - friendly, relaxing & comforting
+      // 4. Uplifting, warm Fmaj9 chord (F3, A3, C4, E4, G4)
       const freqs = [174.61, 220.00, 261.63, 329.63, 392.00];
       const oscs: OscillatorNode[] = [];
 
@@ -229,8 +281,6 @@ class SoundFX {
 
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-
-        // Very subtle micro-detune for gentle acoustic warmth
         osc.detune.setValueAtTime((idx - 2) * 2.5, this.ctx.currentTime);
 
         gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
@@ -240,33 +290,35 @@ class SoundFX {
         oscs.push(osc);
       });
 
-      // Ultra-slow, peaceful breathing LFO (25-second cycle)
+      // 5. Ultra-slow, peaceful breathing LFO (25-second cycle)
       const lfo = this.ctx.createOscillator();
       const lfoGain = this.ctx.createGain();
       lfo.type = 'sine';
-      lfo.frequency.setValueAtTime(0.04, this.ctx.currentTime); // 25s breathing wave
+      lfo.frequency.setValueAtTime(0.04, this.ctx.currentTime);
       lfoGain.gain.setValueAtTime(75, this.ctx.currentTime);
       lfo.connect(lfoGain);
       lfoGain.connect(filter.frequency);
       lfo.start();
 
-      filter.connect(masterGain);
-      masterGain.connect(this.ctx.destination);
-
-      this.ambientGain = masterGain;
       this.ambientOscs = oscs;
       this.ambientLfo = lfo;
-      this.isAmbientPlaying = true;
 
-      // Start friendly celestial chimes every ~5.5 seconds
+      // 6. Celestial chimes
+      if (this.ambientChimeTimer) {
+        clearInterval(this.ambientChimeTimer);
+      }
       this.ambientChimeTimer = setInterval(() => {
-        if (Math.random() > 0.15) {
+        if (Math.random() > 0.2) {
           this.playRandomCelestialChime();
         }
-      }, 5500);
+      }, 5000);
 
-      // Play first gentle chime after short delay
-      setTimeout(() => this.playRandomCelestialChime(), 1200);
+      if (this.ambientChimeTimeout) {
+        clearTimeout(this.ambientChimeTimeout);
+      }
+      this.ambientChimeTimeout = setTimeout(() => {
+        this.playRandomCelestialChime();
+      }, 1000);
     } catch {
       this.isAmbientPlaying = false;
     }
@@ -274,26 +326,48 @@ class SoundFX {
 
   stopAmbientSoundscape() {
     try {
+      this.isAmbientPlaying = false;
+
+      // 1. Immediately cancel chime timers
       if (this.ambientChimeTimer) {
         clearInterval(this.ambientChimeTimer);
         this.ambientChimeTimer = null;
       }
-      if (this.ambientGain && this.ctx) {
-        // Smooth fade-out over 0.8 seconds
-        this.ambientGain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + 0.8);
-        setTimeout(() => {
-          this.ambientOscs.forEach((o) => {
-            try { o.stop(); } catch {}
-          });
-          if (this.ambientLfo) {
-            try { this.ambientLfo.stop(); } catch {}
-          }
-          this.ambientOscs = [];
-          this.ambientLfo = null;
-          this.ambientGain = null;
-        }, 850);
+      if (this.ambientChimeTimeout) {
+        clearTimeout(this.ambientChimeTimeout);
+        this.ambientChimeTimeout = null;
       }
-      this.isAmbientPlaying = false;
+
+      // 2. Immediately ramp master gain down to 0 (50ms clean fade - absolute silence, no clicks)
+      if (this.ambientMasterGain && this.ctx) {
+        this.ambientMasterGain.gain.cancelScheduledValues(this.ctx.currentTime);
+        this.ambientMasterGain.gain.setValueAtTime(this.ambientMasterGain.gain.value, this.ctx.currentTime);
+        this.ambientMasterGain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.05);
+      }
+
+      // 3. Synchronously stop and disconnect all running oscillators
+      this.ambientOscs.forEach((o) => {
+        try {
+          o.stop();
+          o.disconnect();
+        } catch {}
+      });
+      this.ambientOscs = [];
+
+      if (this.ambientLfo) {
+        try {
+          this.ambientLfo.stop();
+          this.ambientLfo.disconnect();
+        } catch {}
+        this.ambientLfo = null;
+      }
+
+      if (this.ambientFilter) {
+        try {
+          this.ambientFilter.disconnect();
+        } catch {}
+        this.ambientFilter = null;
+      }
     } catch {
       this.isAmbientPlaying = false;
     }

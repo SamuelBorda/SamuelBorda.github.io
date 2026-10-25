@@ -83,9 +83,9 @@ Escribe "help" para ver los comandos operativos con ejecución en tiempo real.`,
   • clear                 : Limpia el historial de la pantalla
   • overclock             : Ejecuta prueba de rendimiento gráfico (FX)
 ╠══════════════════════════════════════════════════════════════════╣
-║          [🛡] CIBERSEGURIDAD (DIPLOMADO & HARDENING WEB)         ║
+║              [🛡] CIBERSEGURIDAD & HARDENING WEB                ║
 ╠══════════════════════════════════════════════════════════════════╣
-  • pentest [target]      : Simula laboratorio Nmap (ej: "pentest localhost")
+  • pentest [target]      : Simula reconocimiento Nmap (ej: "pentest localhost")
   • vuln-scan             : Auditoría OWASP Top 10 de la aplicación actual
   • cipher <texto>        : Demuestra AES-256 + derivación de clave (conceptual)
   • owasp                 : Referencia OWASP Top 10 con estado de mitigación`,
@@ -336,7 +336,7 @@ Bio         : ${userProfile.bio}`,
         newLogs.push({
           id: Date.now() + 1,
           type: 'output',
-          text: `[🔍] NMAP RECON // Lab Diplomado Ciberseguridad // Target: ${target}
+          text: `[🔍] NMAP RECON // Target: ${target}
 --------------------------------------------------
 Starting Nmap 7.94 scan...
 
