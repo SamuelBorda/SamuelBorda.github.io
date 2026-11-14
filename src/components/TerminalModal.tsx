@@ -134,7 +134,7 @@ Escribe "help" para ver los comandos operativos con ejecución en tiempo real.`,
           newLogs.push({
             id: Date.now() + 1,
             type: 'error',
-            text: 'Uso: open <número_de_id o nombre> (ej: open 1, open alicia, open dreammoon, open partcut, open osint)',
+            text: 'Uso: open <número_de_id o nombre> (ej: open 1, open alicia, open dreammoon, open osint, open simuinv)',
           });
           break;
         }
