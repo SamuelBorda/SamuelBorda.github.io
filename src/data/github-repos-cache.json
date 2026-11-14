@@ -1,6 +1,26 @@
 [
   {
     "id": "repo-1",
+    "title": "SamuelBorda.github.io",
+    "description": "Sin descripción",
+    "category": "TypeScript",
+    "tags": [
+      "TypeScript"
+    ],
+    "githubUrl": "https://github.com/SamuelBorda/SamuelBorda.github.io",
+    "demoUrl": "",
+    "featured": false,
+    "stats": {
+      "stars": 0,
+      "forks": 0,
+      "language": "TypeScript",
+      "lastUpdated": "2026-10-25"
+    },
+    "difficulty": "MEDIUM",
+    "rewardXP": 500
+  },
+  {
+    "id": "repo-2",
     "title": "SamuelBorda",
     "description": "Config files for my GitHub profile.",
     "category": "Fullstack",
@@ -22,7 +42,7 @@
     "rewardXP": 500
   },
   {
-    "id": "repo-2",
+    "id": "repo-3",
     "title": "Wake-On-Wlan-with-ESP32-and-MQTT-",
     "description": "When a message is published to that topic (for example from a mobile app), the ESP32 sends a Wake-on-LAN magic packet to the target computer in the local network.",
     "category": "C++",
@@ -42,7 +62,7 @@
     "rewardXP": 500
   },
   {
-    "id": "repo-3",
+    "id": "repo-4",
     "title": "Servidor-MineCraft-1.20.1",
     "description": ";3",
     "category": "Batchfile",
@@ -62,7 +82,7 @@
     "rewardXP": 500
   },
   {
-    "id": "repo-4",
+    "id": "repo-5",
     "title": "Git_link",
     "description": "Sin descripción",
     "category": "Fullstack",
@@ -82,7 +102,7 @@
     "rewardXP": 500
   },
   {
-    "id": "repo-5",
+    "id": "repo-6",
     "title": "TSS-SimuInv",
     "description": "Sin descripción",
     "category": "Blade",
@@ -102,7 +122,7 @@
     "rewardXP": 500
   },
   {
-    "id": "repo-6",
+    "id": "repo-7",
     "title": "pruebaglitch",
     "description": "Sin descripción",
     "category": "JavaScript",
@@ -122,7 +142,7 @@
     "rewardXP": 500
   },
   {
-    "id": "repo-7",
+    "id": "repo-8",
     "title": "Beneficio-Costo",
     "description": "Sin descripción",
     "category": "JavaScript",
@@ -137,26 +157,6 @@
       "forks": 0,
       "language": "JavaScript",
       "lastUpdated": "2024-06-09"
-    },
-    "difficulty": "MEDIUM",
-    "rewardXP": 500
-  },
-  {
-    "id": "repo-8",
-    "title": "SamuelBorda.github.io",
-    "description": "Sin descripción",
-    "category": "HTML",
-    "tags": [
-      "HTML"
-    ],
-    "githubUrl": "https://github.com/SamuelBorda/SamuelBorda.github.io",
-    "demoUrl": "",
-    "featured": false,
-    "stats": {
-      "stars": 0,
-      "forks": 0,
-      "language": "HTML",
-      "lastUpdated": "2023-09-11"
     },
     "difficulty": "MEDIUM",
     "rewardXP": 500
@@ -184,7 +184,7 @@
   {
     "id": "repo-10",
     "title": "Heladeria-Ice-Pink",
-    "description": "proyecto de catalogo y pedidos para heladeria",
+    "description": "proyecto de heladeria de umss",
     "category": "HTML",
     "tags": [
       "HTML"

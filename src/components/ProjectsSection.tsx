@@ -12,26 +12,64 @@ export const ProjectsSection: React.FC = () => {
 
   const categories = [
     { label: 'Todos', value: 'ALL' },
-    { label: 'Laravel', value: 'Laravel' },
+    { label: '3D & IA', value: '3D & AI' },
     { label: 'Next.js', value: 'Next.js' },
-    { label: 'Node.js', value: 'Node.js' },
-    { label: 'Backend', value: 'Backend' },
+    { label: 'Laravel', value: 'Laravel' },
+    { label: 'Ciberseguridad', value: 'Ciberseguridad' },
+    { label: 'Backend & IoT', value: 'Backend' },
+    { label: 'Fullstack', value: 'Fullstack' },
     { label: 'Frontend', value: 'Frontend' },
   ];
 
   const filteredProjects = useMemo(() => {
     return curatedProjects.filter((project) => {
-      const matchesCategory =
-        selectedCategory === 'ALL' ||
-        project.category === selectedCategory ||
-        project.tags.some((t) => t.toLowerCase() === selectedCategory.toLowerCase());
-
+      const q = searchQuery.toLowerCase().trim();
       const matchesSearch =
-        project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+        !q ||
+        project.title.toLowerCase().includes(q) ||
+        project.description.toLowerCase().includes(q) ||
+        project.tags.some((tag) => tag.toLowerCase().includes(q)) ||
+        project.category.toLowerCase().includes(q);
 
-      return matchesCategory && matchesSearch;
+      if (!matchesSearch) return false;
+
+      if (selectedCategory === 'ALL') return true;
+
+      if (selectedCategory === '3D & AI') {
+        return (
+          project.category === '3D & AI' ||
+          project.tags.some((t) =>
+            ['three.js', 'webxr', 'ai agents', 'manifold 3d', '3d printing', '3d web', 'gltf/glb'].includes(
+              t.toLowerCase()
+            )
+          )
+        );
+      }
+
+      if (selectedCategory === 'Backend') {
+        return (
+          project.category === 'Backend' ||
+          project.category === 'Node.js' ||
+          project.category === 'DevOps / IoT' ||
+          project.tags.some((t) =>
+            ['backend', 'iot', 'mqtt', 'esp32', 'devops', 'sysadmin', 'batchfile'].includes(t.toLowerCase())
+          )
+        );
+      }
+
+      if (selectedCategory === 'Ciberseguridad') {
+        return (
+          project.category === 'Ciberseguridad' ||
+          project.tags.some((t) =>
+            ['ciberseguridad', 'osint', 'security', 'recon', 'shodan api'].includes(t.toLowerCase())
+          )
+        );
+      }
+
+      return (
+        project.category === selectedCategory ||
+        project.tags.some((t) => t.toLowerCase() === selectedCategory.toLowerCase())
+      );
     });
   }, [selectedCategory, searchQuery]);
 

@@ -8,7 +8,7 @@ export const userProfile: UserProfile = {
   education: 'Ingeniero en Sistemas',
   clearance: 'ING. EN SISTEMAS // FULLSTACK',
   location: 'Cochabamba, Bolivia',
-  bio: 'Ingeniero en Sistemas especializado en desarrollo Fullstack con sólido backend en PHP & Laravel, ecosistemas reactivos modernos en Next.js, React y TypeScript, WebSockets en tiempo real y conocimientos aplicados en ciberseguridad y buenas prácticas defensivas.',
+  bio: 'Ingeniero en Sistemas especializado en desarrollo Fullstack con sólido backend en PHP & Laravel, ecosistemas reactivos modernos en Next.js, React y TypeScript, experiencias interactivas 3D con Three.js y WebXR, orquestación de agentes de IA y conocimientos aplicados en ciberseguridad y buenas prácticas defensivas.',
   github: 'https://github.com/SamuelBorda',
   linkedin: 'https://linkedin.com/in/samuelborda',
   email: 'sami287borda@gmail.com',

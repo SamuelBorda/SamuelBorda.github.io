@@ -2,7 +2,7 @@ export interface Project {
   id: string;
   title: string;
   description: string;
-  category: 'Fullstack' | 'Backend' | 'Frontend' | 'Laravel' | 'Next.js' | 'Node.js' | 'Angular';
+  category: 'Fullstack' | 'Backend' | 'Frontend' | 'Laravel' | 'Next.js' | 'Node.js' | 'Angular' | '3D & AI' | 'Ciberseguridad' | 'DevOps / IoT';
   tags: string[];
   githubUrl: string;
   demoUrl?: string;

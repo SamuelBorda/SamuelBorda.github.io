@@ -134,7 +134,7 @@ Escribe "help" para ver los comandos operativos con ejecución en tiempo real.`,
           newLogs.push({
             id: Date.now() + 1,
             type: 'error',
-            text: 'Uso: open <número_de_id o nombre> (ej: open 1, open simuinv, open poketinder)',
+            text: 'Uso: open <número_de_id o nombre> (ej: open 1, open alicia, open dreammoon, open partcut, open osint)',
           });
           break;
         }
@@ -142,7 +142,7 @@ Escribe "help" para ver los comandos operativos con ejecución en tiempo real.`,
         const idNum = parseInt(args[0], 10);
         let targetProj = !isNaN(idNum) && idNum >= 1 && idNum <= curatedProjects.length
           ? curatedProjects[idNum - 1]
-          : curatedProjects.find((p) => p.title.toLowerCase().includes(args[0].toLowerCase()) || p.id.includes(args[0]));
+          : curatedProjects.find((p) => p.title.toLowerCase().includes(args[0].toLowerCase()) || p.id.toLowerCase().includes(args[0].toLowerCase()));
 
         if (targetProj) {
           soundManager.playSuccess();

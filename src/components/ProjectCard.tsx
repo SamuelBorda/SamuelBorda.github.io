@@ -86,7 +86,17 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({ project }) => {
       {/* Top Section */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-4">
-          <span className="px-3 py-1 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono font-medium text-[#00f0ff]">
+          <span
+            className={`px-3 py-1 rounded-full border text-xs font-mono font-medium ${
+              project.category === 'Ciberseguridad'
+                ? 'bg-red-500/10 border-red-500/30 text-[#ff003c]'
+                : project.category === '3D & AI'
+                ? 'bg-[#fcee0a]/10 border-[#fcee0a]/30 text-[#fcee0a]'
+                : project.category === 'Next.js'
+                ? 'bg-cyan-500/10 border-cyan-500/30 text-[#00f0ff]'
+                : 'bg-white/[0.04] border-white/10 text-[#00f0ff]'
+            }`}
+          >
             {project.category}
           </span>
 

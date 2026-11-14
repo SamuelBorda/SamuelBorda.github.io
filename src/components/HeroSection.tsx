@@ -96,7 +96,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onCopyEmail }) => {
             <span className="text-[11px] font-mono text-zinc-500 uppercase tracking-wider mr-1">
               Stack Core:
             </span>
-            {['Laravel 11', 'Next.js 15', 'React 19', 'TypeScript', 'WebSockets', 'PostgreSQL', 'Docker'].map((tech) => (
+            {['Laravel 11', 'Next.js 16', 'React 19', 'TypeScript', 'Three.js / 3D', 'AI Agents', 'Docker', 'PostgreSQL'].map((tech) => (
               <span
                 key={tech}
                 className="px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] text-xs font-mono text-zinc-300 hover:border-white/20 transition-colors"
